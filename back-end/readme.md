@@ -1,6 +1,7 @@
 # Projects
 
 **GET** /projects
+
 description : _get every project info_
 
     return array of {
@@ -10,8 +11,9 @@ description : _get every project info_
         Integer: labeled_class_count,
     }
 
-**GET** /projects?project*id={String}
-description : \_get project info*
+**GET** /projects?project\*id={String}
+
+description : \_get project info\*
 
     return {
         String: name,
@@ -21,6 +23,7 @@ description : \_get project info*
     }
 
 **POST** /projects
+
 description : _create new project_
 
     body {
@@ -29,16 +32,18 @@ description : _create new project_
 
     return {}
 
-**GET** /projects/query?page={Integer}&project*id={String}
-description : \_get query page data*
+**GET** /projects/query?page={Integer}&project\*id={String}
+
+description : \_get query page data\*
 
     return {
         String[]: preview_image_path,
         String[]: images_id
     }
 
-**GET** /projects/labeled?page={Integer}&project*id={String}&type={"auto", "manual"}
-description : \_get labeled page data by mode*
+**GET** /projects/labeled?page={Integer}&project\*id={String}&type={"auto", "manual"}
+
+description : \_get labeled page data by mode\*
 
     return {
         String[]: preview_image_path,
@@ -47,8 +52,9 @@ description : \_get labeled page data by mode*
 
 # Image
 
-**GET** /image?image*id={String}
-description : \_get image data*
+**GET** /image?image\*id={String}
+
+description : \_get image data\*
 
     return {
         String[]: class_name_list,
@@ -59,6 +65,7 @@ description : \_get image data*
     }
 
 **POST** /image
+
 description : _manually label an image, edit image current class_
 
     body {
@@ -71,6 +78,7 @@ description : _manually label an image, edit image current class_
 # Set Transition
 
 **POST** /recompute
+
 description : _get recompute status (done/computing)_
 
     return {
@@ -78,6 +86,7 @@ description : _get recompute status (done/computing)_
     }
 
 **POST** /recompute
+
 description : _recompute project's confidence score_
 
     body {
@@ -87,6 +96,7 @@ description : _recompute project's confidence score_
     return {}
 
 **POST** /autolabel
+
 description : _autolabel images in query set with confidence higher than limit_
 
     body {
@@ -96,8 +106,9 @@ description : _autolabel images in query set with confidence higher than limit_
 
     return {}
 
-**POST** /add*to_support
-description : \_add images in project_id/labeled/type to project_id/labeled*
+**POST** /add_to_support
+
+description : _add images in project_id/labeled/type to project_id/labeled_
 
     body {
         String: project_id,
