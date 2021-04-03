@@ -1,18 +1,28 @@
 from pymongo import MongoClient
 
+
 class MongoAPI:
     def __init__(self, data, url):
-        self.client = MongoClient(url)  
-      
+        self.client = MongoClient(url)
+
         database = data['database']
         collection = data['collection']
         cursor = self.client[database]
         self.collection = cursor[collection]
         self.data = data
 
-    def read(self):
-        documents = self.collection.find()
-        output = [{item: data[item] for item in data if item != '_id'} for data in documents]
+    def read(self, option=None):
+        documents = self.collection.find(option)
+        output = [{item: data[item] for item in data if item != '_id'}
+                  for data in documents]
+        return output
+
+    def find_one(self, option):
+        document = self.collection.find_one(option)
+        if document == {} or document == None:
+            return {}
+        output = {key: value for (key, value)
+                  in document.items() if key != '_id'}
         return output
 
     def write(self, data):
@@ -27,11 +37,13 @@ class MongoAPI:
         filt = self.data['Filter']
         updated_data = {"$set": self.data['DataToBeUpdated']}
         response = self.collection.update_one(filt, updated_data)
-        output = {'Status': 'Successfully Updated' if response.modified_count > 0 else "Nothing was updated."}
+        output = {'Status': 'Successfully Updated' if response.modified_count >
+                  0 else "Nothing was updated."}
         return output
 
     def delete(self, data):
         filt = data['Document']
         response = self.collection.delete_one(filt)
-        output = {'Status': 'Successfully Deleted' if response.deleted_count > 0 else "Document not found."}
+        output = {'Status': 'Successfully Deleted' if response.deleted_count >
+                  0 else "Document not found."}
         return output
