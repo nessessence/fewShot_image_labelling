@@ -44,6 +44,49 @@ def get_project():
         )
 
 
+@app.route('/projects/query', methods=['GET'])
+def get_query_set():
+    project_id = request.args.get('project_id')
+    page = int(request.args.get('page'))-1 or 0
+    page_size = int(request.args.get('page_size')) or 0
+    mongo_obj = MongoAPI(generate_connection_config('images'), mongo_url)
+    response = mongo_obj.read(option={
+        "project_id": project_id,
+        "image_set": "QUERY"
+    }, skip=page*page_size, limit=page_size
+    )
+
+    return Response(
+        response=json.dumps(response),
+        status=200,
+        mimetype='application/json'
+    )
+
+
+@app.route('/projects/labeled', methods=['GET'])
+def get_labeled_set():
+    project_id = request.args.get('project_id')
+    page = int(request.args.get('page'))-1 or 0
+    page_size = int(request.args.get('page_size')) or 0
+    label_type = request.args.get('type') if request.args.get('type') in [
+        "MANUAL", "AUTO"] else None
+    mongo_obj = MongoAPI(generate_connection_config('images'), mongo_url)
+    option = {
+        "project_id": project_id,
+        "image_set": "LABELED"
+    }
+    if label_type:
+        option["type"] = label_type
+    response = mongo_obj.read(option=option, skip=page*page_size, limit=page_size
+                              )
+
+    return Response(
+        response=json.dumps(response),
+        status=200,
+        mimetype='application/json'
+    )
+
+
 @app.route('/projects', methods=['POST'])
 def read_project_folder():
     project_path = request.json.get('project_path')
@@ -84,7 +127,7 @@ def read_project_folder():
 
     new_project = {
         "name": project_name,
-        "project_id": str(uuid4()),
+        "project_id": project_id,
         "image_classes": [{
             "class_name": k,
             "class_id": v

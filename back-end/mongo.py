@@ -11,8 +11,10 @@ class MongoAPI:
         self.collection = cursor[collection]
         self.data = data
 
-    def read(self, option=None):
+    def read(self, option=None, skip=0, limit=0):
         documents = self.collection.find(option)
+        if skip or limit:
+            documents = documents.skip(skip).limit(limit)
         output = [{item: data[item] for item in data if item != '_id'}
                   for data in documents]
         return output

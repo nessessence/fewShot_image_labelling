@@ -32,7 +32,7 @@ description : _create new project_
 
     return {}
 
-**GET** /projects/query?page={Integer}&project_id={String}
+**GET** /projects/query?page_size={Integer}&page={Integer}&project_id={String}
 
 description : _get query page data_
 
@@ -41,7 +41,7 @@ description : _get query page data_
         String[]: images_id
     }
 
-**GET** /projects/labeled?page={Integer}&project_id={String}&type={"auto", "manual"}
+**GET** /projects/labeled?page_size={Integer}&page={Integer}&project_id={String}&type={"AUTO", "MANUAL"}
 
 description : _get labeled page data by mode_
 
@@ -78,7 +78,7 @@ description : _manually label an image, edit image current class_
 
 # Set Transition
 
-**POST** /recompute
+**GET** /recompute
 
 description : _get recompute status (done/computing)_
 
