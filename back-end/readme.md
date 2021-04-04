@@ -11,9 +11,9 @@ description : _get every project info_
         Integer: labeled_class_count,
     }
 
-**GET** /projects?project\*id={String}
+**GET** /projects?project_id={String}
 
-description : \_get project info\*
+description : _get project info_
 
     return {
         String: name,
@@ -32,18 +32,18 @@ description : _create new project_
 
     return {}
 
-**GET** /projects/query?page={Integer}&project\*id={String}
+**GET** /projects/query?page={Integer}&project_id={String}
 
-description : \_get query page data\*
+description : _get query page data_
 
     return {
         String[]: preview_image_path,
         String[]: images_id
     }
 
-**GET** /projects/labeled?page={Integer}&project\*id={String}&type={"auto", "manual"}
+**GET** /projects/labeled?page={Integer}&project_id={String}&type={"auto", "manual"}
 
-description : \_get labeled page data by mode\*
+description : _get labeled page data by mode_
 
     return {
         String[]: preview_image_path,
@@ -52,16 +52,17 @@ description : \_get labeled page data by mode\*
 
 # Image
 
-**GET** /image?image\*id={String}
+**GET** /image?image_id={String}
 
-description : \_get image data\*
+description : _get image data_
 
     return {
         String[]: class_name_list,
         String[]: class_id_list,
         String[]: class_score_list,
         String: current_class,
-        String: image_path
+        String: image_path,
+        String: image_id
     }
 
 **POST** /image
@@ -90,7 +91,7 @@ description : _get recompute status (done/computing)_
 description : _recompute project's confidence score_
 
     body {
-        String: project_id,
+        String: project\_id,
     }
 
     return {}
@@ -100,7 +101,7 @@ description : _recompute project's confidence score_
 description : _autolabel images in query set with confidence higher than limit_
 
     body {
-        String: project_id,
+        String: project\_id,
         Integer: limit,
     }
 
