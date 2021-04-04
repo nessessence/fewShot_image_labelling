@@ -147,5 +147,15 @@ def read_project_folder():
     )
 
 
+@app.route('/images', methods=['GET'])
+def get_image():
+    pass
+
+
+@app.route('/images', methods=['POST'])
+def manual_label():
+    pass
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001, host='0.0.0.0')
