@@ -25,12 +25,14 @@ class MongoAPI:
                   in document.items() if key != '_id'}
         return output
 
-    def write(self, data):
-        log.info('Writing Data')
-        new_document = data['Document']
-        response = self.collection.insert_one(new_document)
-        output = {'Status': 'Successfully Inserted',
-                  'Document_ID': str(response.inserted_id)}
+    def write(self, document):
+        self.collection.insert_one(document)
+        output = {'Status': 'Successfully Inserted'}
+        return output
+
+    def insert_many(self, document):
+        self.collection.insert_many(document)
+        output = {'Status': 'Successfully Inserted'}
         return output
 
     def update(self):
