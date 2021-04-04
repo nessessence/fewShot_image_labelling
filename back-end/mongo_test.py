@@ -1,4 +1,5 @@
 from mongo import MongoAPI
+from flask import json
 
 data = {
     "database": "NoMoreLabel",
@@ -6,4 +7,8 @@ data = {
 }
 url = "mongodb://localhost:5000/"
 mongo_obj = MongoAPI(data, url)
-print(json.dumps(mongo_obj.read(), indent=4))
+option = {
+    "project_id": "abcd1234"
+}
+print(mongo_obj.find_one(option))
+
