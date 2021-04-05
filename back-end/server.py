@@ -173,7 +173,34 @@ def get_image():
 
 @app.route('/images', methods=['POST'])
 def manual_label():
-    pass
+    image_id = request.json.get('image_id')
+    class_id = request.json.get('class_id')
+    if image_id is None or image_id == {} or class_id is None or class_id == {}:
+        return Response(response=json.dumps({"Error": "Please provide labeling information"}),
+                        status=400,
+                        mimetype='application/json')
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
+    image = mongo_images.find_one(option={"image_id": image_id})
+    project_id = image['project_id']
+    mongo_projects = MongoAPI(
+        generate_connection_config('projects'), mongo_url)
+    project = mongo_projects.find_one(option={"project_id": project_id})
+    image_classes_id = [p['class_id'] for p in project['image_classes']]
+    if class_id not in image_classes_id:
+        return Response(response=json.dumps({"Error": "class with such id does not exist in this project"}),
+                        status=400,
+                        mimetype='application/json')
+    response = mongo_images.update(image, {"$set": {
+        "image_set": "LABELED",
+        "type": "MANUAL",
+        "class_id": class_id
+    }})
+
+    return Response(
+        response=json.dumps(response),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 if __name__ == '__main__':
