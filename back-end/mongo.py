@@ -37,10 +37,8 @@ class MongoAPI:
         output = {'Status': 'Successfully Inserted'}
         return output
 
-    def update(self):
-        filt = self.data['Filter']
-        updated_data = {"$set": self.data['DataToBeUpdated']}
-        response = self.collection.update_one(filt, updated_data)
+    def update(self, query, value):
+        response = self.collection.update_one(query, value)
         output = {'Status': 'Successfully Updated' if response.modified_count >
                   0 else "Nothing was updated."}
         return output
