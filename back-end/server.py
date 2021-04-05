@@ -3,6 +3,7 @@ from mongo import MongoAPI
 import os
 from glob import glob
 from uuid import uuid4
+import base64
 
 app = Flask(__name__)
 mongo_url = "mongodb://localhost:5000/"
@@ -149,7 +150,25 @@ def read_project_folder():
 
 @app.route('/images', methods=['GET'])
 def get_image():
-    pass
+    image_id = request.args.get('image_id')
+    mongo_obj = MongoAPI(generate_connection_config('images'), mongo_url)
+    if image_id == None:
+        response = mongo_obj.read()
+        return Response(
+            response=json.dumps(response),
+            status=200,
+            mimetype='application/json'
+        )
+    else:
+        response = mongo_obj.find_one({"image_id": image_id})
+        with open(response['image_path'], "rb") as imageFile:
+            blob = base64.b64encode(imageFile.read())
+        response['blob'] = str(blob)
+        return Response(
+            response=json.dumps(response),
+            status=200,
+            mimetype='application/json'
+        )
 
 
 @app.route('/images', methods=['POST'])
