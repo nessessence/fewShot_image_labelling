@@ -4,6 +4,7 @@ import os
 from glob import glob
 from uuid import uuid4
 import base64
+import cv2
 
 app = Flask(__name__)
 mongo_url = "mongodb://localhost:5000/"
@@ -14,6 +15,14 @@ def generate_connection_config(collection):
         "database": "NoMoreLabel",
         "collection": collection
     }
+
+
+def get_preview_image_blob(image_path, dim=(70, 70)):
+    image = cv2.imread(image_path)
+    image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
+    _, buffer = cv2.imencode('.jpg', image)
+    blob = str(base64.b64encode(buffer))
+    return blob
 
 
 @app.route('/')
@@ -114,16 +123,18 @@ def read_project_folder():
         dirname = os.path.split(subdir)[-1]
         subdir_file = glob(os.path.join(subdir, '*'), recursive=True)
         for file in subdir_file:
+            image_path = os.path.join(subdir, file)
+            preview_image_blob = get_preview_image_blob(image_path)
             class_id = image_classes[dirname]
             images.append({
                 "project_id": project_id,
                 "image_id": str(uuid4()),
-                "image_path": os.path.join(subdir, file),
+                "image_path": image_path,
                 "class_id": class_id,
-                "method": None,
                 "class_score": None,
                 "image_set": "QUERY" if class_id == '0' else "SUPPORT",
-                "type": None
+                "type": None,
+                "preview_image_blob": preview_image_blob
             })
 
     new_project = {
