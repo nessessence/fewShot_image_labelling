@@ -43,6 +43,12 @@ class MongoAPI:
                   0 else "Nothing was updated."}
         return output
 
+    def update_many(self, query, value):
+        response = self.collection.update_many(query, value)
+        output = {'Status': f'{response.modified_count} Successfully Updated' if response.modified_count >
+                  0 else "Nothing was updated."}
+        return output
+
     def delete(self, data):
         filt = data['Document']
         response = self.collection.delete_one(filt)

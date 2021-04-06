@@ -5,6 +5,7 @@ from glob import glob
 from uuid import uuid4
 import base64
 import cv2
+import numpy as np
 
 app = Flask(__name__)
 mongo_url = "mongodb://localhost:5000/"
@@ -206,6 +207,121 @@ def manual_label():
         "type": "MANUAL",
         "class_id": class_id
     }})
+
+    return Response(
+        response=json.dumps(response),
+        status=200,
+        mimetype='application/json'
+    )
+
+
+@app.route('/recompute', methods=['POST'])
+def recompute():
+    project_id = request.json.get('project_id')
+    mongo_projects = MongoAPI(
+        generate_connection_config('projects'), mongo_url)
+    project = mongo_projects.find_one(option={'project_id': project_id})
+    if project == {}:
+        return Response(response=json.dumps({"Error": "project with such id does not exist"}),
+                        status=400,
+                        mimetype='application/json')
+    classes = list(
+        filter(lambda x: x['class_id'] != '0',  project['image_classes']))
+
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
+    # dummy class score ------
+    classes_id = [c['class_id'] for c in classes]
+    support = mongo_images.read(
+        option={'image_set': 'SUPPORT', 'project_id': project_id})
+    query = mongo_images.read(
+        option={'image_set': 'QUERY', 'project_id': project_id})
+    class_scores = []
+    for img in query:
+        score = np.random.rand(len(classes))
+        score = score/sum(score)
+        class_scores.append({
+            'image_id': img['image_id'],
+            'class_score': {c: s for c, s in zip(classes_id, score)}
+        })
+    # ------------------------
+    for obj in class_scores:
+        mongo_images.update(
+            query={"image_id": obj['image_id']},
+            value={"$set": {"class_score": obj['class_score']}}
+        )
+
+    return Response(
+        response=json.dumps({'Status': 'Successfully Updated'}),
+        status=200,
+        mimetype='application/json'
+    )
+
+
+@app.route('/autolabel', methods=['POST'])
+def autolabel():
+    project_id = request.json.get('project_id')
+    limit = request.json.get('limit')
+    if limit is None or limit == {}:
+        return Response(response=json.dumps({"Error": "Please provide limit threshold"}),
+                        status=400,
+                        mimetype='application/json')
+    limit = int(limit)
+    mongo_projects = MongoAPI(
+        generate_connection_config('projects'), mongo_url)
+    project = mongo_projects.find_one(option={'project_id': project_id})
+    if project == {}:
+        return Response(response=json.dumps({"Error": "project with such id does not exist"}),
+                        status=400,
+                        mimetype='application/json')
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
+    query = mongo_images.read(
+        option={'image_set': 'QUERY', 'project_id': project_id})
+    classes_best_score = []
+    for q in query:
+        idx = np.argmax(list(q['class_score'].values()))
+        best_score = list(q['class_score'].values())[idx]
+        if best_score*100 >= limit:
+            class_id = list(q['class_score'].keys())[idx]
+            classes_best_score.append({
+                'class_id': class_id,
+                'image_id': q['image_id']
+            })
+    for obj in classes_best_score:
+        mongo_images.update(
+            query={'image_id': obj['image_id'], 'project_id': project_id},
+            value={'$set': {
+                'image_set': 'LABELED',
+                'type': 'AUTO',
+                'class_id': obj['class_id']
+            }}
+        )
+
+    return Response(
+        response=json.dumps({'Status': 'autolabel update complete'}),
+        status=200,
+        mimetype='application/json'
+    )
+
+
+@app.route('/add_to_support', methods=['POST'])
+def add_to_support():
+    project_id = request.json.get('project_id')
+    label_type = request.json.get('type')
+    if project_id is None or project_id == {} or label_type is None or label_type == {}:
+        return Response(response=json.dumps({"Error": "Please provide image set information"}),
+                        status=400,
+                        mimetype='application/json')
+    if label_type not in ["MANUAL", "AUTO"]:
+        return Response(response=json.dumps({"Error": "label type does not exist"}),
+                        status=400,
+                        mimetype='application/json')
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
+    response = mongo_images.update_many(
+        query={
+            "project_id": project_id,
+            "type": label_type
+        },
+        value={"$set": {"image_set": "SUPPORT"}})
 
     return Response(
         response=json.dumps(response),
