@@ -78,20 +78,12 @@ description : _manually label an image, edit image current class_
 
 # Set Transition
 
-**GET** /recompute
-
-description : _get recompute status (done/computing)_
-
-    return {
-        Boolean: done
-    }
-
 **POST** /recompute
 
 description : _recompute project's confidence score_
 
     body {
-        String: project\_id,
+        String: project_id,
     }
 
     return {}
@@ -101,7 +93,7 @@ description : _recompute project's confidence score_
 description : _autolabel images in query set with confidence higher than limit_
 
     body {
-        String: project\_id,
+        String: project_id,
         Integer: limit,
     }
 
@@ -109,7 +101,7 @@ description : _autolabel images in query set with confidence higher than limit_
 
 **POST** /add_to_support
 
-description : _add images in project_id/labeled/type to project_id/labeled_
+description : _ add images in project_id/labeled/type to project_id/labeled _
 
     body {
         String: project_id,
