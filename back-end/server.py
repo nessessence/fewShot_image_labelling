@@ -3,6 +3,8 @@ from mongo import MongoAPI
 import os
 from glob import glob
 from uuid import uuid4
+import base64
+import cv2
 
 app = Flask(__name__)
 mongo_url = "mongodb://localhost:5000/"
@@ -13,6 +15,14 @@ def generate_connection_config(collection):
         "database": "NoMoreLabel",
         "collection": collection
     }
+
+
+def get_preview_image_blob(image_path, dim=(70, 70)):
+    image = cv2.imread(image_path)
+    image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
+    _, buffer = cv2.imencode('.jpg', image)
+    blob = str(base64.b64encode(buffer))
+    return blob
 
 
 @app.route('/')
@@ -113,16 +123,18 @@ def read_project_folder():
         dirname = os.path.split(subdir)[-1]
         subdir_file = glob(os.path.join(subdir, '*'), recursive=True)
         for file in subdir_file:
+            image_path = os.path.join(subdir, file)
+            preview_image_blob = get_preview_image_blob(image_path)
             class_id = image_classes[dirname]
             images.append({
                 "project_id": project_id,
                 "image_id": str(uuid4()),
-                "image_path": os.path.join(subdir, file),
+                "image_path": image_path,
                 "class_id": class_id,
-                "method": None,
                 "class_score": None,
                 "image_set": "QUERY" if class_id == '0' else "SUPPORT",
-                "type": None
+                "type": None,
+                "preview_image_blob": preview_image_blob
             })
 
     new_project = {
@@ -142,6 +154,61 @@ def read_project_folder():
     mongo_images.insert_many(images)
 
     return Response(
+        status=200,
+        mimetype='application/json'
+    )
+
+
+@app.route('/images', methods=['GET'])
+def get_image():
+    image_id = request.args.get('image_id')
+    mongo_obj = MongoAPI(generate_connection_config('images'), mongo_url)
+    if image_id == None:
+        response = mongo_obj.read()
+        return Response(
+            response=json.dumps(response),
+            status=200,
+            mimetype='application/json'
+        )
+    else:
+        response = mongo_obj.find_one({"image_id": image_id})
+        with open(response['image_path'], "rb") as imageFile:
+            blob = base64.b64encode(imageFile.read())
+        response['blob'] = str(blob)
+        return Response(
+            response=json.dumps(response),
+            status=200,
+            mimetype='application/json'
+        )
+
+
+@app.route('/images', methods=['POST'])
+def manual_label():
+    image_id = request.json.get('image_id')
+    class_id = request.json.get('class_id')
+    if image_id is None or image_id == {} or class_id is None or class_id == {}:
+        return Response(response=json.dumps({"Error": "Please provide labeling information"}),
+                        status=400,
+                        mimetype='application/json')
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
+    image = mongo_images.find_one(option={"image_id": image_id})
+    project_id = image['project_id']
+    mongo_projects = MongoAPI(
+        generate_connection_config('projects'), mongo_url)
+    project = mongo_projects.find_one(option={"project_id": project_id})
+    image_classes_id = [p['class_id'] for p in project['image_classes']]
+    if class_id not in image_classes_id:
+        return Response(response=json.dumps({"Error": "class with such id does not exist in this project"}),
+                        status=400,
+                        mimetype='application/json')
+    response = mongo_images.update(image, {"$set": {
+        "image_set": "LABELED",
+        "type": "MANUAL",
+        "class_id": class_id
+    }})
+
+    return Response(
+        response=json.dumps(response),
         status=200,
         mimetype='application/json'
     )
