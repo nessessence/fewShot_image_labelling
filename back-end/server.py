@@ -226,7 +226,29 @@ def autolabel():
 
 @app.route('/add_to_support', methods=['POST'])
 def add_to_support():
-    pass
+    project_id = request.json.get('project_id')
+    label_type = request.json.get('type')
+    if project_id is None or project_id == {} or label_type is None or label_type == {}:
+        return Response(response=json.dumps({"Error": "Please provide image set information"}),
+                        status=400,
+                        mimetype='application/json')
+    if label_type not in ["MANUAL", "AUTO"]:
+        return Response(response=json.dumps({"Error": "label type does not exist"}),
+                        status=400,
+                        mimetype='application/json')
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
+    response = mongo_images.update_many(
+        query={
+            "project_id": project_id,
+            "type": label_type
+        },
+        value={"$set": {"image_set": "SUPPORT"}})
+
+    return Response(
+        response=json.dumps(response),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 if __name__ == '__main__':
