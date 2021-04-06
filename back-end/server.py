@@ -259,7 +259,48 @@ def recompute():
 
 @app.route('/autolabel', methods=['POST'])
 def autolabel():
-    pass
+    project_id = request.json.get('project_id')
+    limit = request.json.get('limit')
+    if limit is None or limit == {}:
+        return Response(response=json.dumps({"Error": "Please provide limit threshold"}),
+                        status=400,
+                        mimetype='application/json')
+    limit = int(limit)
+    mongo_projects = MongoAPI(
+        generate_connection_config('projects'), mongo_url)
+    project = mongo_projects.find_one(option={'project_id': project_id})
+    if project == {}:
+        return Response(response=json.dumps({"Error": "project with such id does not exist"}),
+                        status=400,
+                        mimetype='application/json')
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
+    query = mongo_images.read(
+        option={'image_set': 'QUERY', 'project_id': project_id})
+    classes_best_score = []
+    for q in query:
+        idx = np.argmax(list(q['class_score'].values()))
+        best_score = list(q['class_score'].values())[idx]
+        if best_score*100 >= limit:
+            class_id = list(q['class_score'].keys())[idx]
+            classes_best_score.append({
+                'class_id': class_id,
+                'image_id': q['image_id']
+            })
+    for obj in classes_best_score:
+        mongo_images.update(
+            query={'image_id': obj['image_id'], 'project_id': project_id},
+            value={'$set': {
+                'image_set': 'LABELED',
+                'type': 'AUTO',
+                'class_id': obj['class_id']
+            }}
+        )
+
+    return Response(
+        response=json.dumps({'Status': 'autolabel update complete'}),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 @app.route('/add_to_support', methods=['POST'])
