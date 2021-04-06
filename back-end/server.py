@@ -214,5 +214,20 @@ def manual_label():
     )
 
 
+@app.route('/recompute', methods=['POST'])
+def recompute():
+    pass
+
+
+@app.route('/autolabel', methods=['POST'])
+def autolabel():
+    pass
+
+
+@app.route('/add_to_support', methods=['POST'])
+def add_to_support():
+    pass
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001, host='0.0.0.0')
