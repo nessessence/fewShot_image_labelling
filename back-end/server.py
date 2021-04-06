@@ -231,8 +231,10 @@ def recompute():
     mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
     # dummy class score ------
     classes_id = [c['class_id'] for c in classes]
-    support = mongo_images.read(option={'image_set': 'SUPPORT'})
-    query = mongo_images.read(option={'image_set': 'QUERY'})
+    support = mongo_images.read(
+        option={'image_set': 'SUPPORT', 'project_id': project_id})
+    query = mongo_images.read(
+        option={'image_set': 'QUERY', 'project_id': project_id})
     class_scores = []
     for img in query:
         score = np.random.rand(len(classes))
