@@ -8,6 +8,8 @@ import cv2
 import numpy as np
 import pymongo
 import shutil
+from ssl_fewshot.labeller_module import get_label
+from pprint import pprint
 
 
 app = Flask(__name__)
@@ -278,23 +280,36 @@ def recompute():
 
     mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
     # dummy class score ------
-    classes_id = [c['class_id'] for c in classes]
-    support = mongo_images.read(
-        option={'image_set': 'SUPPORT', 'project_id': project_id})
-    query = mongo_images.read(
-        option={'image_set': 'QUERY', 'project_id': project_id})
+    project_path = project['project_path']
+    project_name = project['name']
+    logits, dataset = get_label(
+        data_path=project_path,
+        logs_dir="./logs",
+        ndf=192,
+        rkhs=1536,
+        nd=8,
+        batch_size=512,
+        model_type="AmdimNet",
+        _load_checkpoint=False,
+        out_name=project_name
+    )
+    class_map = {c['class_name']: c['class_id'] for c in classes}
+    classes_id = [class_map[x] for x in dataset.label_names]
+    logits = logits.cpu().numpy()
+    query = dataset.query
     class_scores = []
-    for img in query:
-        score = np.random.rand(len(classes))
+    for idx, img_path in enumerate(query):
+        score = logits[idx]
         score = score/sum(score)
         class_scores.append({
-            'image_id': img['image_id'],
-            'class_score': {c: s for c, s in zip(classes_id, score)}
+            'image_path': img_path,
+            'class_score': {c: s for c, s in zip(classes_id, score.tolist())}
         })
+    pprint(class_scores)
     # ------------------------
     for obj in class_scores:
         mongo_images.update(
-            query={"image_id": obj['image_id']},
+            query={"image_path": obj['image_path']},
             value={"$set": {"class_score": obj['class_score']}}
         )
 
