@@ -35,6 +35,21 @@ def base():
     )
 
 
+@app.route('/dataroot', methods=['GET'])
+def read_dataroot():
+    pwd = os.path.abspath(os.getcwd())
+    dataroot = os.path.join(pwd, 'dataroot', '*')
+    folder_name = glob(dataroot)
+    response = {
+        'folder_name': folder_name
+    }
+    return Response(
+        response=json.dumps(response),
+        status=200,
+        mimetype='application/json'
+    )
+
+
 @app.route('/projects', methods=['GET'])
 def get_project():
     project_id = request.args.get('project_id')
