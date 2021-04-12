@@ -6,9 +6,23 @@ from uuid import uuid4
 import base64
 import cv2
 import numpy as np
+import pymongo
+import shutil
+
 
 app = Flask(__name__)
 mongo_url = "mongodb://localhost:5000/"
+database_name = 'NoMoreLabel'
+collection_name = ['images', 'projects']
+
+
+def init_database(mongo_url, database_name, collection_name):
+    client = pymongo.MongoClient(mongo_url)
+    database_exist = database_name in client.list_database_names()
+    if not database_exist:
+        db = client[database_name]
+        for cn in collection_name:
+            db.create_collection(cn)
 
 
 def generate_connection_config(collection):
@@ -26,10 +40,37 @@ def get_preview_image_blob(image_path, dim=(70, 70)):
     return blob
 
 
+def generate_folder_path(image_path, folder_name):
+    folder, filename = os.path.split(image_path)
+    root, _ = os.path.split(folder)
+    return os.path.join(root, folder_name, filename)
+
+
+def move_folder(path, new_path):
+    if path != new_path:
+        shutil.move(path, new_path)
+    return True
+
+
 @app.route('/')
 def base():
     return Response(
         response=json.dumps({"status": "up"}),
+        status=200,
+        mimetype='application/json'
+    )
+
+
+@app.route('/dataroot', methods=['GET'])
+def read_dataroot():
+    pwd = os.path.abspath(os.getcwd())
+    dataroot = os.path.join(pwd, 'dataroot', '*')
+    folder_name = glob(dataroot)
+    response = {
+        'folder_name': folder_name
+    }
+    return Response(
+        response=json.dumps(response),
         status=200,
         mimetype='application/json'
     )
@@ -197,15 +238,22 @@ def manual_label():
     mongo_projects = MongoAPI(
         generate_connection_config('projects'), mongo_url)
     project = mongo_projects.find_one(option={"project_id": project_id})
-    image_classes_id = [p['class_id'] for p in project['image_classes']]
-    if class_id not in image_classes_id:
+
+    image_classes_map = {p['class_id']: p['class_name']
+                         for p in project['image_classes']}
+    if class_id not in image_classes_map.keys():
         return Response(response=json.dumps({"Error": "class with such id does not exist in this project"}),
                         status=400,
                         mimetype='application/json')
+    current_path = image['image_path']
+    new_path = generate_folder_path(current_path, image_classes_map['0'])
+
+    move_folder(current_path, new_path)
     response = mongo_images.update(image, {"$set": {
         "image_set": "LABELED",
         "type": "MANUAL",
-        "class_id": class_id
+        "class_id": class_id,
+        "image_path": new_path
     }})
 
     return Response(
@@ -316,19 +364,40 @@ def add_to_support():
                         status=400,
                         mimetype='application/json')
     mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
-    response = mongo_images.update_many(
-        query={
-            "project_id": project_id,
-            "type": label_type
-        },
-        value={"$set": {"image_set": "SUPPORT"}})
+    mongo_projects = MongoAPI(
+        generate_connection_config('projects'), mongo_url)
+    images = mongo_images.read(option={
+        "project_id": project_id,
+        "type": label_type
+    })
+    project_classes = mongo_projects.find_one(
+        {'project_id': project_id})['image_classes']
+    class_map = {c['class_id']: c['class_name'] for c in project_classes}
+    update_batch = []
+    for img in images:
+        update_batch.append({
+            'image_id': img['image_id'],
+            'current_path': img['image_path'],
+            'image_path': generate_folder_path(img['image_path'], class_map[img['class_id']])
+        })
+
+    for ub in update_batch:
+        move_folder(ub['current_path'], ub['image_path'])
+        mongo_images.update(
+            query={'image_id': ub['image_id']},
+            value={'$set': {
+                'image_set': 'SUPPORT',
+                'image_path': ub['image_path']
+            }}
+        )
 
     return Response(
-        response=json.dumps(response),
+        response=json.dumps(update_batch),
         status=200,
         mimetype='application/json'
     )
 
 
 if __name__ == '__main__':
+    init_database(mongo_url, database_name, collection_name)
     app.run(debug=True, port=5001, host='0.0.0.0')

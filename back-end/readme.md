@@ -1,5 +1,13 @@
 # Projects
 
+**GET** /dataroot
+
+description : _get folders name in dataroot_
+
+    return array of {
+        String[]: folder_name
+    }
+
 **GET** /projects
 
 description : _get every project info_
@@ -24,7 +32,7 @@ description : _get project info_
 
 **POST** /projects
 
-description : _create new project_
+description : _create new project from folder in dataroot_
 
     body {
     	String: project_path
