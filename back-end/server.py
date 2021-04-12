@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 import pymongo
 import shutil
+import matplotlib.pyplot as plt
 
 
 app = Flask(__name__)
@@ -33,7 +34,8 @@ def generate_connection_config(collection):
 
 
 def get_preview_image_blob(image_path, dim=(70, 70)):
-    image = cv2.imread(image_path)
+    image = plt.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
     _, buffer = cv2.imencode('.jpg', image)
     blob = str(base64.b64encode(buffer))
