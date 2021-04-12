@@ -280,18 +280,21 @@ def recompute():
         filter(lambda x: x['class_id'] != '0',  project['image_classes']))
 
     mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
-    # dummy class score ------
+    # compute class score
     project_path = project['project_path']
     project_name = project['name']
+    if project_name in os.listdir('./ssl_fewshot/logs'):
+        _load_checkpoint=True
+    else: _load_checkpoint=False
     logits, dataset = get_label(
         data_path=project_path,
-        logs_dir="./logs",
+        logs_dir="./ssl_fewshot/logs",
         ndf=192,
         rkhs=1536,
         nd=8,
-        batch_size=512,
+        batch_size=64,
         model_type="AmdimNet",
-        _load_checkpoint=False,
+        _load_checkpoint=_load_checkpoint,
         out_name=project_name
     )
     class_map = {c['class_name']: c['class_id'] for c in classes}
