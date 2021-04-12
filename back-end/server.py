@@ -10,6 +10,7 @@ import pymongo
 import shutil
 from ssl_fewshot.labeller_module import get_label
 from pprint import pprint
+from scipy.special import softmax
 
 
 app = Flask(__name__)
@@ -300,12 +301,12 @@ def recompute():
     class_scores = []
     for idx, img_path in enumerate(query):
         score = logits[idx]
-        score = score/sum(score)
+        # score = score/sum(score)
+        score = softmax(score)
         class_scores.append({
             'image_path': img_path,
             'class_score': {c: s for c, s in zip(classes_id, score.tolist())}
         })
-    pprint(class_scores)
     # ------------------------
     for obj in class_scores:
         mongo_images.update(
