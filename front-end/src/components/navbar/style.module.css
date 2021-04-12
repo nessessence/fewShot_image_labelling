@@ -1,0 +1,31 @@
+.navContainer {
+  background-color: #81d9ff;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.navLogo {
+  font-size: 24px;
+  font-weight: 700;
+  margin-right: 40px;
+}
+
+.navItem {
+  text-decoration: none;
+  color: #606970;
+  font-size: 18px;
+  margin-left: 30px;
+}
+.navItem:hover {
+  color: #2e3235;
+  font-weight: 600;
+}
+
+.navItemCurrent {
+  text-decoration: none;
+  color: #2e3235;
+  font-size: 18px;
+  margin-left: 30px;
+  font-weight: 600;
+}
