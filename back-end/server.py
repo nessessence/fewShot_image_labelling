@@ -6,9 +6,22 @@ from uuid import uuid4
 import base64
 import cv2
 import numpy as np
+import pymongo
+
 
 app = Flask(__name__)
 mongo_url = "mongodb://localhost:5000/"
+database_name = 'NoMoreLabel'
+collection_name = ['images', 'projects']
+
+
+def init_database(mongo_url, database_name, collection_name):
+    client = pymongo.MongoClient(mongo_url)
+    database_exist = database_name in client.list_database_names()
+    if not database_exist:
+        db = client[database_name]
+        for cn in collection_name:
+            db.create_collection(cn)
 
 
 def generate_connection_config(collection):
@@ -346,4 +359,5 @@ def add_to_support():
 
 
 if __name__ == '__main__':
+    init_database(mongo_url, database_name, collection_name)
     app.run(debug=True, port=5001, host='0.0.0.0')
