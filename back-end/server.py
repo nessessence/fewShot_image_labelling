@@ -7,6 +7,7 @@ import base64
 import cv2
 import numpy as np
 import pymongo
+import shutil
 
 
 app = Flask(__name__)
@@ -37,6 +38,18 @@ def get_preview_image_blob(image_path, dim=(70, 70)):
     _, buffer = cv2.imencode('.jpg', image)
     blob = str(base64.b64encode(buffer))
     return blob
+
+
+def generate_folder_path(image_path, folder_name):
+    folder, filename = os.path.split(image_path)
+    root, _ = os.path.split(folder)
+    return os.path.join(root, folder_name, filename)
+
+
+def move_folder(path, new_path):
+    if path != new_path:
+        shutil.move(path, new_path)
+    return True
 
 
 @app.route('/')
@@ -344,15 +357,35 @@ def add_to_support():
                         status=400,
                         mimetype='application/json')
     mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
-    response = mongo_images.update_many(
-        query={
-            "project_id": project_id,
-            "type": label_type
-        },
-        value={"$set": {"image_set": "SUPPORT"}})
+    mongo_projects = MongoAPI(
+        generate_connection_config('projects'), mongo_url)
+    images = mongo_images.read(option={
+        "project_id": project_id,
+        "type": label_type
+    })
+    project_classes = mongo_projects.find_one(
+        {'project_id': project_id})['image_classes']
+    class_map = {c['class_id']: c['class_name'] for c in project_classes}
+    update_batch = []
+    for img in images:
+        update_batch.append({
+            'image_id': img['image_id'],
+            'current_path': img['image_path'],
+            'image_path': generate_folder_path(img['image_path'], class_map[img['class_id']])
+        })
+
+    for ub in update_batch:
+        move_folder(ub['current_path'], ub['image_path'])
+        mongo_images.update(
+            query={'image_id': ub['image_id']},
+            value={'$set': {
+                'image_set': 'SUPPORT',
+                'image_path': ub['image_path']
+            }}
+        )
 
     return Response(
-        response=json.dumps(response),
+        response=json.dumps(update_batch),
         status=200,
         mimetype='application/json'
     )
