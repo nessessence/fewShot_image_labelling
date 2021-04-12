@@ -238,15 +238,22 @@ def manual_label():
     mongo_projects = MongoAPI(
         generate_connection_config('projects'), mongo_url)
     project = mongo_projects.find_one(option={"project_id": project_id})
-    image_classes_id = [p['class_id'] for p in project['image_classes']]
-    if class_id not in image_classes_id:
+
+    image_classes_map = {p['class_id']: p['class_name']
+                         for p in project['image_classes']}
+    if class_id not in image_classes_map.keys():
         return Response(response=json.dumps({"Error": "class with such id does not exist in this project"}),
                         status=400,
                         mimetype='application/json')
+    current_path = image['image_path']
+    new_path = generate_folder_path(current_path, image_classes_map['0'])
+
+    move_folder(current_path, new_path)
     response = mongo_images.update(image, {"$set": {
         "image_set": "LABELED",
         "type": "MANUAL",
-        "class_id": class_id
+        "class_id": class_id,
+        "image_path": new_path
     }})
 
     return Response(
