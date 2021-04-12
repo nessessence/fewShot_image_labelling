@@ -150,13 +150,13 @@ def read_project_folder():
     project_name = os.path.split(project_path)[-1]
     joined_path = os.path.join(project_path, '*')
     project_id = str(uuid4())
-    image_classes = {'unlabeled': '0'}
+    image_classes = {'query': '0'}
     images = []
     unlabeled_image_count = None
     for subdir in glob(joined_path):
         dirname = os.path.split(subdir)[-1]
         subdir_file = glob(os.path.join(subdir, '*'), recursive=True)
-        if dirname == 'unlabeled':
+        if dirname == 'query':
             unlabeled_image_count = len(subdir_file)
         else:
             image_classes[dirname] = str(uuid4())
