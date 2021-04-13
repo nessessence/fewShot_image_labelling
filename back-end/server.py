@@ -1,4 +1,5 @@
 from flask import Flask, request, json, Response
+from flask_cors import CORS, cross_origin
 from mongo import MongoAPI
 import os
 from glob import glob
@@ -12,6 +13,8 @@ import matplotlib.pyplot as plt
 
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 mongo_url = "mongodb://localhost:5000/"
 database_name = 'NoMoreLabel'
 collection_name = ['images', 'projects']
@@ -55,6 +58,7 @@ def move_folder(path, new_path):
 
 
 @app.route('/')
+@cross_origin()
 def base():
     return Response(
         response=json.dumps({"status": "up"}),
@@ -64,6 +68,7 @@ def base():
 
 
 @app.route('/dataroot', methods=['GET'])
+@cross_origin()
 def read_dataroot():
     pwd = os.path.abspath(os.getcwd())
     dataroot = os.path.join(pwd, 'dataroot', '*')
@@ -79,6 +84,7 @@ def read_dataroot():
 
 
 @app.route('/projects', methods=['GET'])
+@cross_origin()
 def get_project():
     project_id = request.args.get('project_id')
     mongo_obj = MongoAPI(generate_connection_config('projects'), mongo_url)
@@ -99,6 +105,7 @@ def get_project():
 
 
 @app.route('/projects/query', methods=['GET'])
+@cross_origin()
 def get_query_set():
     project_id = request.args.get('project_id')
     page = int(request.args.get('page'))-1 or 0
@@ -118,6 +125,7 @@ def get_query_set():
 
 
 @app.route('/projects/labeled', methods=['GET'])
+@cross_origin()
 def get_labeled_set():
     project_id = request.args.get('project_id')
     page = int(request.args.get('page'))-1 or 0
@@ -142,6 +150,7 @@ def get_labeled_set():
 
 
 @app.route('/projects', methods=['POST'])
+@cross_origin()
 def read_project_folder():
     project_path = request.json.get('project_path')
     if project_path is None or project_path == {}:
@@ -204,6 +213,7 @@ def read_project_folder():
 
 
 @app.route('/images', methods=['GET'])
+@cross_origin()
 def get_image():
     image_id = request.args.get('image_id')
     mongo_obj = MongoAPI(generate_connection_config('images'), mongo_url)
@@ -227,6 +237,7 @@ def get_image():
 
 
 @app.route('/images', methods=['POST'])
+@cross_origin()
 def manual_label():
     image_id = request.json.get('image_id')
     class_id = request.json.get('class_id')
@@ -266,6 +277,7 @@ def manual_label():
 
 
 @app.route('/recompute', methods=['POST'])
+@cross_origin()
 def recompute():
     project_id = request.json.get('project_id')
     mongo_projects = MongoAPI(
@@ -308,6 +320,7 @@ def recompute():
 
 
 @app.route('/autolabel', methods=['POST'])
+@cross_origin()
 def autolabel():
     project_id = request.json.get('project_id')
     limit = request.json.get('limit')
@@ -354,6 +367,7 @@ def autolabel():
 
 
 @app.route('/add_to_support', methods=['POST'])
+@cross_origin()
 def add_to_support():
     project_id = request.json.get('project_id')
     label_type = request.json.get('type')
