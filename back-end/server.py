@@ -57,6 +57,22 @@ def move_folder(path, new_path):
     return True
 
 
+def fill_preview_image(project, mongo_images):
+    project_id = project['project_id']
+    for ic in project['image_classes']:
+        preview = mongo_images.read(
+            option={
+                'project_id': project_id,
+                'class_id': ic['class_id']
+            },
+            limit=4
+        )
+        preview = [p['preview_image_blob'][2:-1] for p in preview]
+        ic['preview'] = preview
+
+    return project
+
+
 @app.route('/')
 @cross_origin()
 def base():
@@ -87,16 +103,21 @@ def read_dataroot():
 @cross_origin()
 def get_project():
     project_id = request.args.get('project_id')
-    mongo_obj = MongoAPI(generate_connection_config('projects'), mongo_url)
+    mongo_projects = MongoAPI(
+        generate_connection_config('projects'), mongo_url)
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
     if project_id == None:
-        response = mongo_obj.read()
+        response = mongo_projects.read()
+        for project in response:
+            project = fill_preview_image(project, mongo_images)
         return Response(
             response=json.dumps(response),
             status=200,
             mimetype='application/json'
         )
     else:
-        response = mongo_obj.find_one({"project_id": project_id})
+        response = mongo_projects.find_one({"project_id": project_id})
+        response = fill_preview_image(response, mongo_images)
         return Response(
             response=json.dumps(response),
             status=200,
