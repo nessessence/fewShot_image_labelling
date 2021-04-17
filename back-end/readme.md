@@ -84,6 +84,12 @@ description : _manually label an image, edit image current class_
 
     return {}
 
+**GET** /count?image_set={String}&label_type={String}&project_id={String}
+
+description : _get total number of image set_
+
+    return Integer
+
 # Set Transition
 
 **POST** /recompute
