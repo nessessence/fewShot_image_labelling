@@ -435,6 +435,33 @@ def add_to_support():
     )
 
 
+@app.route('/count', methods=['GET'])
+@cross_origin()
+def count_set():
+    image_set = request.args.get('image_set')
+    label_type = request.args.get('label_type')
+    project_id = request.args.get('project_id')
+    if project_id is None or project_id == {}:
+        return Response(response=json.dumps({"Error": "Please provide image set information"}),
+                        status=400,
+                        mimetype='application/json')
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
+    option = {
+        'project_id': project_id,
+        'image_set': image_set
+    }
+    if label_type:
+        option['label_type'] = label_type
+    response = mongo_images.read(option)
+    response = len(response)
+
+    return Response(
+        response=json.dumps(response),
+        status=200,
+        mimetype='application/json'
+    )
+
+
 if __name__ == '__main__':
     init_database(mongo_url, database_name, collection_name)
     app.run(debug=True, port=5001, host='0.0.0.0')
