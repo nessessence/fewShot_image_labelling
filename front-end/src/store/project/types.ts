@@ -5,14 +5,15 @@ export interface ProjectState {
 }
 
 export interface Project {
-    name: String,
-    projectId: String,
-    imageClasses: ImageClass[],
-    projectPath: String,
-    unlabeledImageCount: Number
+    name: string,
+    project_id: string,
+    image_classes: ImageClass[],
+    project_path: string,
+    unlabeled_image_count: number
 }
 
 interface ImageClass {
-    className: String,
-    classId: String
+    class_name: string,
+    class_id: string,
+    preview?: string[]
 }

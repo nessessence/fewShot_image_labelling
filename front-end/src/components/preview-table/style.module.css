@@ -1,0 +1,28 @@
+.detailContainer {
+  padding: 20px;
+  background-color: #f2fbff;
+}
+
+.tableRow {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.11);
+  display: flex;
+  padding: 12px;
+}
+.tableColumn1 {
+  width: 10%;
+}
+.tableColumn2 {
+  width: 15%;
+}
+.tableColumn3 {
+  display: flex;
+  width: 75%;
+}
+.tableHeader {
+  font-weight: 600;
+}
+
+.imageContainer {
+  border: 1px solid rgba(0, 0, 0, 0.11);
+  margin-right: 20px;
+}
