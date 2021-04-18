@@ -42,6 +42,7 @@ def get_preview_image_blob(image_path, dim=(70, 70)):
     image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
     _, buffer = cv2.imencode('.jpg', image)
     blob = str(base64.b64encode(buffer))
+    blob = blob[2:-1]
     return blob
 
 
@@ -67,7 +68,7 @@ def fill_preview_image(project, mongo_images):
             },
             limit=4
         )
-        preview = [p['preview_image_blob'][2:-1] for p in preview]
+        preview = [p['preview_image_blob'] for p in preview]
         ic['preview'] = preview
 
     return project
@@ -249,7 +250,7 @@ def get_image():
         response = mongo_obj.find_one({"image_id": image_id})
         with open(response['image_path'], "rb") as imageFile:
             blob = base64.b64encode(imageFile.read())
-        response['blob'] = str(blob)
+        response['blob'] = str(blob)[2:-1]
         return Response(
             response=json.dumps(response),
             status=200,
