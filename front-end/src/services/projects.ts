@@ -13,6 +13,11 @@ const getProjects = async () => {
     return response.data
 }
 
+const getProject = async (projectId: string) => {
+    const response = await axios.get(`${ENDPOINT}/projects?project_id=${projectId}`)
+    return response.data
+}
+
 const postProject = async (projectPath: string) => {
     await axios.post(`${ENDPOINT}/projects`, {
         project_path: projectPath
@@ -22,5 +27,6 @@ const postProject = async (projectPath: string) => {
 export {
     getDataroot,
     getProjects,
+    getProject,
     postProject
 }

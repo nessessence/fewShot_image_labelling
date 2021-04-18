@@ -17,7 +17,7 @@ function ProjectPreview({ project }: ProjectPreviewProps) {
     const filteredClasses = image_classes.filter(c => c.class_id !== '0')
 
     return (
-        <Link to={`/label?projectId=${project.project_id}`} className={styles.projectPreview}>
+        <Link to={`/label/${project.project_id}`} className={styles.projectPreview}>
             <div className={styles.projectPreviewContainer}>
                 <div className={styles.innerContainer}>
                     <div className={styles.projectName}>

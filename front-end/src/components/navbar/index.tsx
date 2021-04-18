@@ -1,16 +1,19 @@
 import { Link, useLocation } from 'react-router-dom'
 import styles from './style.module.css'
 
+type MenuItem = {
+    text: string,
+    to: string,
+    disabled: boolean
+}
+
 function Navbar() {
-    const menu = [
+    const menu: MenuItem[] = [
         {
             text: 'Home',
-            to: '/'
+            to: '/',
+            disabled: false
         },
-        {
-            text: 'Label',
-            to: '/label'
-        }
     ]
 
     const pathname = useLocation().pathname
@@ -23,7 +26,7 @@ function Navbar() {
             {
                 menu.map(item => (
                     <Link
-                        to={item.to}
+                        to={item.disabled ? '#' : item.to}
                         className={pathname === item.to ? styles.navItemCurrent : styles.navItem}
                         key={item.to}
                     >

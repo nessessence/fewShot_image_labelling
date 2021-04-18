@@ -3,14 +3,18 @@ import ReduxThunk from 'redux-thunk';
 
 import { projectReducer } from './project/reducer';
 import { ProjectState } from './project/types';
+import { ImageState } from './image/types'
+import { imageReducer } from './image/reducer';
 
 export interface RootState {
-    project: ProjectState
+    project: ProjectState,
+    image: ImageState
 }
 
 const store = createStore<RootState, any, any, any>(
     combineReducers({
-        project: projectReducer
+        project: projectReducer,
+        image: imageReducer
     }),
     applyMiddleware(ReduxThunk)
 );

@@ -25,7 +25,7 @@ function PreviewTable ({ project }: PreviewTableProps) {
                         <div className={styles.tableColumn3}>
                         {
                             imageClass.preview && imageClass.preview.map(binary => (
-                                <div className={styles.imageContainer}>
+                                <div className={styles.imageContainer} key={binary}>
                                     <EncodedImage encodedString={binary}/>
                                 </div>
                             ))

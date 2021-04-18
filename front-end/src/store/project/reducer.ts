@@ -1,5 +1,5 @@
 import { ProjectState } from './types'
-import { DISCOVER_DATAROOT, STORE_PROJECTS } from './actions'
+import { DISCOVER_DATAROOT, STORE_PROJECTS, SET_CURRENT_PROJECTS } from './actions'
 
 const initialState: ProjectState = {
     dataroot: [],
@@ -16,6 +16,10 @@ export function projectReducer(state: ProjectState = initialState, action: any):
         case STORE_PROJECTS:
             return Object.assign({}, state, {
                 loadedProject: action.projects
+            })
+        case SET_CURRENT_PROJECTS:
+            return Object.assign({}, state, {
+                currentProject: action.project
             })
         default:
             return state
