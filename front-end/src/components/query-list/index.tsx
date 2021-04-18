@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import Pagination from '@material-ui/lab/Pagination'
 import { Link } from 'react-router-dom'
+import { loadQueryImage } from '../../store/image/actions'
 
 import styles from './style.module.css'
 import { Project } from '../../store/project/types'
-import { countImageSet, getQueryImage } from '../../services/images'
+import { countImageSet } from '../../services/images'
 import { Image, ImageSet } from '../../store/image/types'
 import { EncodedImage } from '../index'
+import { RootState } from '../../store/index'
 
 type QueryListProps = {
     project: Project
@@ -14,19 +17,16 @@ type QueryListProps = {
 }
 
 function QueryList({ project, pageSize }: QueryListProps) {
+    const dispatch = useDispatch()
+
     const projectId = project.project_id
     const [pageCount, setPageCount] = useState<number>(0)
     const [page, setPage] = useState<number>(1)
-    const [queryImages, setQueryImages] = useState<Image[]>([])
+    const queryImages = useSelector((state: RootState) => state.image.queryImages)
 
     const handleChange = async (_: any, value: number) => {
         setPage(value)
-        const queryImages = await getQueryImage(
-            pageSize,
-            page,
-            projectId
-        )
-        setQueryImages(queryImages)
+        dispatch(loadQueryImage(pageSize, page, projectId))
     }
 
     useEffect(() => {
@@ -38,14 +38,10 @@ function QueryList({ project, pageSize }: QueryListProps) {
             )
             const pageCount = Math.ceil(queryImageCount/pageSize)
             setPageCount(pageCount)
-            const queryImages = await getQueryImage(
-                pageSize,
-                page,
-                projectId
-            )
-            setQueryImages(queryImages)
+            dispatch(loadQueryImage(pageSize, page, projectId))
+
         })()
-    }, [projectId, pageSize, page])
+    }, [projectId, pageSize, page, dispatch])
 
     return (
         <>
