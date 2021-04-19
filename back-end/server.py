@@ -187,12 +187,12 @@ def read_project_folder():
     project_name = os.path.split(project_path)[-1]
     joined_path = os.path.join(project_path, '*')
     project_id = str(uuid4())
-    image_classes = {'query': '0'}
+    image_classes = {'Query': '0'}
     images = []
     for subdir in glob(joined_path):
         dirname = os.path.split(subdir)[-1]
         subdir_file = glob(os.path.join(subdir, '*'), recursive=True)
-        if dirname == 'query':
+        if dirname == 'Query':
             continue
         else:
             image_classes[dirname] = str(uuid4())
