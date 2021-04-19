@@ -57,7 +57,7 @@ function PreviewTable ({ project }: PreviewTableProps) {
                         {
                             imageClass && supportImages[imageClass.class_id] &&
                             supportImages[imageClass.class_id].map(image => (
-                                <Link className={styles.imageContainer} key={image.image_id} to={`/image/${image.image_id}`}>
+                                <Link className={styles.imageContainer} key={image.image_id} to={`/image/${image.image_id}?temporal=TRUE`}>
                                     <EncodedImage encodedString={image.preview_image_blob}/>
                                 </Link>
                             ))

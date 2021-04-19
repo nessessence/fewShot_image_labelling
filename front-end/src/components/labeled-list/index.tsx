@@ -75,7 +75,7 @@ function LabeledList({ project, pageSize, labelType }: LabeledListProps) {
             <div className={styles.imagesDisplay}>
                 {
                     labeledImages.map((image: Image) => (
-                        <Link className={styles.imageContainer} to={`/image/${image.image_id}`} key={image.image_id}>
+                        <Link className={styles.imageContainer} to={`/image/${image.image_id}?temporal=TRUE`} key={image.image_id}>
                             <EncodedImage encodedString={image.preview_image_blob}/>
                         </Link>
                     ))

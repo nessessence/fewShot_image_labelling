@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
 import styles from './style.module.css'
@@ -16,11 +16,13 @@ type ParamType = {
 function ImageLabel() {
     const dispatch = useDispatch()
     const history = useHistory()
+    const query = new URLSearchParams(useLocation().search);
 
     const { imageId } = useParams<ParamType>()
     const [image, setImage] = useState<Image | undefined>(undefined)
     const project = useSelector((state: RootState) => state.project.currentProject)
     const queryImages = useSelector((state: RootState) => state.image.queryImages)
+    const isTemporal = query.get('temporal')
     
     const iterateItem = (queryImages: Image[], imageId: string) => {
         const index = queryImages.findIndex(image => image.image_id === imageId)
@@ -44,9 +46,13 @@ function ImageLabel() {
         const nextImage = iterateItem(queryImages, imageId)
         const currentLength = queryImages.length
         dispatch(removeQueryImage(imageId))
-        if (currentLength === 1) {
+        if (isTemporal === 'TRUE') {
+            history.goBack()
+        }
+        else if (currentLength === 1) {
             history.push(`/label/${project?.project_id}`)
-        } else {
+        }
+        else {
             history.push(`/image/${nextImage.image_id}`)
         }
     }
