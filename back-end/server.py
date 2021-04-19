@@ -9,6 +9,9 @@ import cv2
 import numpy as np
 import pymongo
 import shutil
+from ssl_fewshot.labeller_module import get_label
+from pprint import pprint
+from scipy.special import softmax
 import matplotlib.pyplot as plt
 
 
@@ -313,26 +316,43 @@ def recompute():
         filter(lambda x: x['class_id'] != '0',  project['image_classes']))
 
     mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
-    # dummy class score ------
-    classes_id = [c['class_id'] for c in classes]
-    query = mongo_images.read(
-        option={'image_set': 'QUERY', 'project_id': project_id})
+
+    project_path = project['project_path']
+    project_name = project['name']
+    if project_name in os.listdir('./ssl_fewshot/logs'):
+        _load_checkpoint=True
+    else: _load_checkpoint=False
+    logits, dataset = get_label(
+        data_path=project_path,
+        logs_dir="./ssl_fewshot/logs",
+        ndf=192,
+        rkhs=1536,
+        nd=8,
+        batch_size=64,
+        model_type="AmdimNet",
+        _load_checkpoint=_load_checkpoint,
+        out_name=project_name
+    )
+    class_map = {c['class_name']: c['class_id'] for c in classes}
+    classes_id = [class_map[x] for x in dataset.label_names]
+    logits = logits.cpu().numpy()
+    query = dataset.query
     class_scores = []
-    for img in query:
-        score = np.random.rand(len(classes))
-        score = score/sum(score)
-        score = list(score)
+    for idx, img_path in enumerate(query):
+        score = logits[idx]
+        # score = score/sum(score)
+        score = softmax(score)
+
         class_scores.append({
-            'image_id': img['image_id'],
-            'class_score': {c: s for c, s in zip(classes_id, score)}
+            'image_path': img_path,
+            'class_score': {c: s for c, s in zip(classes_id, score.tolist())}
         })
-    # ------------------------
+  
     for obj in class_scores:
-        res = mongo_images.update(
-            query={"image_id": obj['image_id']},
+        mongo_images.update(
+            query={"image_path": obj['image_path']},
             value={"$set": {"class_score": obj['class_score']}}
         )
-        print(res)
 
     return Response(
         response=json.dumps({'Status': 'Successfully Updated'}),
