@@ -1,0 +1,53 @@
+.labeledListContainer {
+  margin-top: 20px;
+}
+
+.firstRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px 10px 0;
+  border-bottom: 1px solid rgb(204, 204, 204);
+}
+
+.button {
+  background: #8dffbb;
+  padding: 10px;
+  outline: none;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.25);
+  transition: 0.1s;
+}
+.button:hover {
+  box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.25);
+}
+
+.labelTypeDisplay {
+  font-size: 22px;
+}
+
+.imagesDisplay {
+  max-width: 100%;
+  margin-top: 30px;
+}
+
+.imageContainer {
+  margin-right: 15px;
+  margin-bottom: 15px;
+  display: inline-block;
+  border: 1px solid black;
+  cursor: pointer;
+  transition: 0.1s;
+}
+.imageContainer:hover {
+  opacity: 0.5;
+}
+
+.paginationContainer {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}

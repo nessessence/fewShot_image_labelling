@@ -1,4 +1,5 @@
 from flask import Flask, request, json, Response
+from flask_cors import CORS, cross_origin
 from mongo import MongoAPI
 import os
 from glob import glob
@@ -11,9 +12,12 @@ import shutil
 from ssl_fewshot.labeller_module import get_label
 from pprint import pprint
 from scipy.special import softmax
+import matplotlib.pyplot as plt
 
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 mongo_url = "mongodb://localhost:5000/"
 database_name = 'NoMoreLabel'
 collection_name = ['images', 'projects']
@@ -36,10 +40,12 @@ def generate_connection_config(collection):
 
 
 def get_preview_image_blob(image_path, dim=(70, 70)):
-    image = cv2.imread(image_path)
+    image = plt.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
     _, buffer = cv2.imencode('.jpg', image)
     blob = str(base64.b64encode(buffer))
+    blob = blob[2:-1]
     return blob
 
 
@@ -55,7 +61,24 @@ def move_folder(path, new_path):
     return True
 
 
+def fill_preview_image(project, mongo_images):
+    project_id = project['project_id']
+    for ic in project['image_classes']:
+        preview = mongo_images.read(
+            option={
+                'project_id': project_id,
+                'class_id': ic['class_id']
+            },
+            limit=4
+        )
+        preview = [p['preview_image_blob'] for p in preview]
+        ic['preview'] = preview
+
+    return project
+
+
 @app.route('/')
+@cross_origin()
 def base():
     return Response(
         response=json.dumps({"status": "up"}),
@@ -65,6 +88,7 @@ def base():
 
 
 @app.route('/dataroot', methods=['GET'])
+@cross_origin()
 def read_dataroot():
     pwd = os.path.abspath(os.getcwd())
     dataroot = os.path.join(pwd, 'dataroot', '*')
@@ -80,18 +104,24 @@ def read_dataroot():
 
 
 @app.route('/projects', methods=['GET'])
+@cross_origin()
 def get_project():
     project_id = request.args.get('project_id')
-    mongo_obj = MongoAPI(generate_connection_config('projects'), mongo_url)
+    mongo_projects = MongoAPI(
+        generate_connection_config('projects'), mongo_url)
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
     if project_id == None:
-        response = mongo_obj.read()
+        response = mongo_projects.read()
+        for project in response:
+            project = fill_preview_image(project, mongo_images)
         return Response(
             response=json.dumps(response),
             status=200,
             mimetype='application/json'
         )
     else:
-        response = mongo_obj.find_one({"project_id": project_id})
+        response = mongo_projects.find_one({"project_id": project_id})
+        response = fill_preview_image(response, mongo_images)
         return Response(
             response=json.dumps(response),
             status=200,
@@ -100,6 +130,7 @@ def get_project():
 
 
 @app.route('/projects/query', methods=['GET'])
+@cross_origin()
 def get_query_set():
     project_id = request.args.get('project_id')
     page = int(request.args.get('page'))-1 or 0
@@ -119,6 +150,7 @@ def get_query_set():
 
 
 @app.route('/projects/labeled', methods=['GET'])
+@cross_origin()
 def get_labeled_set():
     project_id = request.args.get('project_id')
     page = int(request.args.get('page'))-1 or 0
@@ -143,6 +175,7 @@ def get_labeled_set():
 
 
 @app.route('/projects', methods=['POST'])
+@cross_origin()
 def read_project_folder():
     project_path = request.json.get('project_path')
     if project_path is None or project_path == {}:
@@ -153,13 +186,13 @@ def read_project_folder():
     project_name = os.path.split(project_path)[-1]
     joined_path = os.path.join(project_path, '*')
     project_id = str(uuid4())
-    image_classes = {'unlabeled': '0'}
+    image_classes = {'query': '0'}
     images = []
     unlabeled_image_count = None
     for subdir in glob(joined_path):
         dirname = os.path.split(subdir)[-1]
         subdir_file = glob(os.path.join(subdir, '*'), recursive=True)
-        if dirname == 'unlabeled':
+        if dirname == 'query':
             unlabeled_image_count = len(subdir_file)
         else:
             image_classes[dirname] = str(uuid4())
@@ -205,6 +238,7 @@ def read_project_folder():
 
 
 @app.route('/images', methods=['GET'])
+@cross_origin()
 def get_image():
     image_id = request.args.get('image_id')
     mongo_obj = MongoAPI(generate_connection_config('images'), mongo_url)
@@ -219,7 +253,7 @@ def get_image():
         response = mongo_obj.find_one({"image_id": image_id})
         with open(response['image_path'], "rb") as imageFile:
             blob = base64.b64encode(imageFile.read())
-        response['blob'] = str(blob)
+        response['blob'] = str(blob)[2:-1]
         return Response(
             response=json.dumps(response),
             status=200,
@@ -228,6 +262,7 @@ def get_image():
 
 
 @app.route('/images', methods=['POST'])
+@cross_origin()
 def manual_label():
     image_id = request.json.get('image_id')
     class_id = request.json.get('class_id')
@@ -267,6 +302,7 @@ def manual_label():
 
 
 @app.route('/recompute', methods=['POST'])
+@cross_origin()
 def recompute():
     project_id = request.json.get('project_id')
     mongo_projects = MongoAPI(
@@ -280,7 +316,7 @@ def recompute():
         filter(lambda x: x['class_id'] != '0',  project['image_classes']))
 
     mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
-    # compute class score
+
     project_path = project['project_path']
     project_name = project['name']
     if project_name in os.listdir('./ssl_fewshot/logs'):
@@ -306,11 +342,12 @@ def recompute():
         score = logits[idx]
         # score = score/sum(score)
         score = softmax(score)
+
         class_scores.append({
             'image_path': img_path,
             'class_score': {c: s for c, s in zip(classes_id, score.tolist())}
         })
-    # ------------------------
+  
     for obj in class_scores:
         mongo_images.update(
             query={"image_path": obj['image_path']},
@@ -325,6 +362,7 @@ def recompute():
 
 
 @app.route('/autolabel', methods=['POST'])
+@cross_origin()
 def autolabel():
     project_id = request.json.get('project_id')
     limit = request.json.get('limit')
@@ -371,6 +409,7 @@ def autolabel():
 
 
 @app.route('/add_to_support', methods=['POST'])
+@cross_origin()
 def add_to_support():
     project_id = request.json.get('project_id')
     label_type = request.json.get('type')
@@ -412,6 +451,33 @@ def add_to_support():
 
     return Response(
         response=json.dumps(update_batch),
+        status=200,
+        mimetype='application/json'
+    )
+
+
+@app.route('/count', methods=['GET'])
+@cross_origin()
+def count_set():
+    image_set = request.args.get('image_set')
+    label_type = request.args.get('label_type')
+    project_id = request.args.get('project_id')
+    if project_id is None or project_id == {}:
+        return Response(response=json.dumps({"Error": "Please provide image set information"}),
+                        status=400,
+                        mimetype='application/json')
+    mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
+    option = {
+        'project_id': project_id,
+        'image_set': image_set
+    }
+    if label_type:
+        option['label_type'] = label_type
+    response = mongo_images.read(option)
+    response = len(response)
+
+    return Response(
+        response=json.dumps(response),
         status=200,
         mimetype='application/json'
     )
