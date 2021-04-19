@@ -6,6 +6,7 @@ import styles from './style.module.css'
 import { Project } from '../../store/project/types'
 import { Image, ImageSet, LabelType } from '../../store/image/types'
 import { countImageSet, getLabeledImage } from '../../services/images'
+import { addToSupport } from '../../services/transitions'
 import { EncodedImage } from '../index'
 
 type LabeledListProps = {
@@ -31,30 +32,45 @@ function LabeledList({ project, pageSize, labelType }: LabeledListProps) {
         setLabeledImages(labeledImages)
     }
 
+    const handleTransition = async () => {
+        const response = await addToSupport(projectId, labelType)
+        if (response !== 200) {
+            alert('server error')
+        }
+        reloadData(projectId, pageSize, page, labelType)
+    }
+
+    const reloadData = async (
+        projectId: string,
+        pageSize: number,
+        page: number,
+        labelType: LabelType
+    ) => {
+        const queryImageCount = await countImageSet(
+            ImageSet.LABELED,
+            projectId,
+            null
+        )
+        const pageCount = Math.ceil(queryImageCount/pageSize)
+        setPageCount(pageCount)
+        const labeledImages = await getLabeledImage(
+            pageSize,
+            page,
+            projectId,
+            labelType
+        )
+        setLabeledImages(labeledImages)
+    }
+
     useEffect(() => {
-        (async () => {
-            const queryImageCount = await countImageSet(
-                ImageSet.LABELED,
-                projectId,
-                null
-            )
-            const pageCount = Math.ceil(queryImageCount/pageSize)
-            setPageCount(pageCount)
-            const labeledImages = await getLabeledImage(
-                pageSize,
-                page,
-                projectId,
-                labelType
-            )
-            setLabeledImages(labeledImages)
-        })()
+        reloadData(projectId, pageSize, page, labelType)
     }, [projectId, pageSize, page, labelType])
 
     return (
         <div className={styles.labeledListContainer}>
             <div className={styles.firstRow}>
                 <div className={styles.labelTypeDisplay}>{labelType} labeled</div>
-                <button className={styles.button}>add to support</button>
+                <button className={styles.button} onClick={handleTransition}>add to support</button>
             </div>
             <div className={styles.imagesDisplay}>
                 {

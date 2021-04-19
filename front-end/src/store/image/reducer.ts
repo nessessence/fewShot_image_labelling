@@ -15,7 +15,6 @@ export function imageReducer(state: ImageState = initialState, action: any): Ima
             const newQueryImages = state.queryImages.filter(image => (
                 image.image_id !== action.imageId
             ))
-            console.log(newQueryImages)
             return Object.assign({}, state, {
                 queryImages: newQueryImages
             })

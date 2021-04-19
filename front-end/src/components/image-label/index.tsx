@@ -23,7 +23,6 @@ function ImageLabel() {
     const queryImages = useSelector((state: RootState) => state.image.queryImages)
     
     const iterateItem = (queryImages: Image[], imageId: string) => {
-        console.log(queryImages)
         const index = queryImages.findIndex(image => image.image_id === imageId)
         return queryImages[(index+1)%queryImages.length]
     }
