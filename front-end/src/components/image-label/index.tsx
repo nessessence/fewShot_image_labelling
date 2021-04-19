@@ -1,21 +1,32 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useParams, useHistory } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 
 import styles from './style.module.css'
 import { Image } from '../../store/image/types'
-import { getImage } from '../../services/images'
+import { getImage, manualLabel } from '../../services/images'
 import { RootState } from '../../store/index'
 import { EncodedImage } from '../../components/index'
+import { removeQueryImage } from '../../store/image/actions'
 
 type ParamType = {
     imageId: string
 }
 
 function ImageLabel() {
+    const dispatch = useDispatch()
+    const history = useHistory()
+
     const { imageId } = useParams<ParamType>()
     const [image, setImage] = useState<Image | undefined>(undefined)
     const project = useSelector((state: RootState) => state.project.currentProject)
+    const queryImages = useSelector((state: RootState) => state.image.queryImages)
+    
+    const iterateItem = (queryImages: Image[], imageId: string) => {
+        console.log(queryImages)
+        const index = queryImages.findIndex(image => image.image_id === imageId)
+        return queryImages[(index+1)%queryImages.length]
+    }
 
     useEffect(() => {
         (async () => {
@@ -23,6 +34,23 @@ function ImageLabel() {
             setImage(image)
         })()
     }, [imageId])
+
+    const handleLabel = async (classId: string) => {
+        const response = await manualLabel(imageId, classId)
+        if (response !== 200) {
+            alert('server error')
+            return
+        }
+
+        const nextImage = iterateItem(queryImages, imageId)
+        const currentLength = queryImages.length
+        dispatch(removeQueryImage(imageId))
+        if (currentLength === 1) {
+            history.push(`/label/${project?.project_id}`)
+        } else {
+            history.push(`/image/${nextImage.image_id}`)
+        }
+    }
 
     const classScore = image?.class_score
     const filteredClass = project ? project.image_classes.filter(ic => ic.class_id !== '0') : null
@@ -62,7 +90,7 @@ function ImageLabel() {
                             <div className={styles.classBox}>
                                 {
                                     filteredScoredClass?.map(ic => (
-                                        <div className={styles.classItem} key={ic.class_id}>
+                                        <div className={styles.classItem} key={ic.class_id} onClick={() => { handleLabel(ic.class_id) }}>
                                             <div className={styles.classItemName}>{ic.class_name}</div>
                                             <div className={styles.classItemScore}>score : {ic.score}</div>
                                         </div>

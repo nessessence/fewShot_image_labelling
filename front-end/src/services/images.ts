@@ -45,9 +45,21 @@ const getLabeledImage = async (
     return labeledImages
 }
 
+const manualLabel = async (
+    imageId: string,
+    classId: string
+) => {
+    const response = await axios.post(`${ENDPOINT}/images`, {
+        image_id: imageId,
+        class_id: classId
+    })
+    return response.status
+}
+
 export {
     countImageSet,
     getQueryImage,
     getImage,
-    getLabeledImage
+    getLabeledImage,
+    manualLabel
 }

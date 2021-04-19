@@ -22,7 +22,7 @@ export const removeQueryImage = (
 ) => {
     return (dispatch: any) => {
         dispatch({
-            type: LOAD_QUERY_IMAGE,
+            type: REMOVE_QUERY_IMAGE,
             imageId: imageId
         })
     }

@@ -12,10 +12,12 @@ export function imageReducer(state: ImageState = initialState, action: any): Ima
                 queryImages: action.queryImages
             })
         case REMOVE_QUERY_IMAGE:
+            const newQueryImages = state.queryImages.filter(image => (
+                image.image_id !== action.imageId
+            ))
+            console.log(newQueryImages)
             return Object.assign({}, state, {
-                queryImages: state.queryImages.filter(image => (
-                    image.image_id !== action.imageId
-                ))
+                queryImages: newQueryImages
             })
         default:
             return state
