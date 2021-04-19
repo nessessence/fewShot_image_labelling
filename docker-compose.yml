@@ -1,0 +1,30 @@
+version: "3.3"
+services:
+    db:
+        image: mongo
+        restart: always
+        container_name: fewshow-labelling-db
+        volumes:
+            - ./mongodb:/data/db
+    backend:
+        image: fewshot-labelling-backend-image
+        build: back-end
+        container_name: fewshot-labelling-backend
+        command: bash -c "python3 server.py"
+        runtime: nvidia
+        depends_on:
+            - db
+        ports:
+            - 5001:5001
+        volumes:
+            - ./back-end/dataroot:/back-end/dataroot
+    frontend:
+        image: fewshot-labelling-frontend-image
+        build: front-end
+        container_name: fewshot-labelling-frontend
+        command: yarn start
+        ports:
+            - 3000:3000
+        depends_on:
+            - db
+            - backend
