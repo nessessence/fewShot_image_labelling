@@ -5,14 +5,12 @@ import os
 from glob import glob
 from uuid import uuid4
 import base64
-import cv2
 import numpy as np
 import pymongo
 import shutil
-from ssl_fewshot.labeller_module import get_label
+# from ssl_fewshot.labeller_module import get_label
 from pprint import pprint
 from scipy.special import softmax
-import matplotlib.pyplot as plt
 
 
 app = Flask(__name__)
@@ -39,14 +37,10 @@ def generate_connection_config(collection):
     }
 
 
-def get_preview_image_blob(image_path, dim=(70, 70)):
-    image = plt.imread(image_path)
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
-    _, buffer = cv2.imencode('.jpg', image)
-    blob = str(base64.b64encode(buffer))
-    blob = blob[2:-1]
-    return blob
+def get_preview_image_blob(image_path):
+    with open(image_path, 'rb') as image_file:
+        blob = base64.b64encode(image_file.read()).decode('utf-8')
+        return blob
 
 
 def generate_folder_path(image_path, folder_name):
@@ -320,8 +314,9 @@ def recompute():
     project_path = project['project_path']
     project_name = project['name']
     if project_name in os.listdir('./ssl_fewshot/logs'):
-        _load_checkpoint=True
-    else: _load_checkpoint=False
+        _load_checkpoint = True
+    else:
+        _load_checkpoint = False
     logits, dataset = get_label(
         data_path=project_path,
         logs_dir="./ssl_fewshot/logs",
@@ -347,7 +342,7 @@ def recompute():
             'image_path': img_path,
             'class_score': {c: s for c, s in zip(classes_id, score.tolist())}
         })
-  
+
     for obj in class_scores:
         mongo_images.update(
             query={"image_path": obj['image_path']},
