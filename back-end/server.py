@@ -16,7 +16,7 @@ from scipy.special import softmax
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
-mongo_url = "mongodb://localhost:5000/"
+mongo_url = "mongodb://db:27017/"
 database_name = 'NoMoreLabel'
 collection_name = ['images', 'projects']
 
