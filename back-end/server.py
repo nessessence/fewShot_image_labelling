@@ -8,7 +8,7 @@ import base64
 import numpy as np
 import pymongo
 import shutil
-# from ssl_fewshot.labeller_module import get_label
+from ssl_fewshot.labeller_module import get_label
 from pprint import pprint
 from scipy.special import softmax
 
