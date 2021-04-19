@@ -315,24 +315,24 @@ def recompute():
     mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
     # dummy class score ------
     classes_id = [c['class_id'] for c in classes]
-    support = mongo_images.read(
-        option={'image_set': 'SUPPORT', 'project_id': project_id})
     query = mongo_images.read(
         option={'image_set': 'QUERY', 'project_id': project_id})
     class_scores = []
     for img in query:
         score = np.random.rand(len(classes))
         score = score/sum(score)
+        score = list(score)
         class_scores.append({
             'image_id': img['image_id'],
             'class_score': {c: s for c, s in zip(classes_id, score)}
         })
     # ------------------------
     for obj in class_scores:
-        mongo_images.update(
+        res = mongo_images.update(
             query={"image_id": obj['image_id']},
             value={"$set": {"class_score": obj['class_score']}}
         )
+        print(res)
 
     return Response(
         response=json.dumps({'Status': 'Successfully Updated'}),
