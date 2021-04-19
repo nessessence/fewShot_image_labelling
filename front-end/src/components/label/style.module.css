@@ -45,6 +45,7 @@
 
 .tab {
   transform: translateY(1px);
+  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,6 +61,7 @@
 }
 .tabCurrent {
   transform: translateY(1px);
+  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
