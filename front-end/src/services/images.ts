@@ -1,8 +1,7 @@
 import axios from 'axios'
 
+import { ENDPOINT } from './index'
 import { LabelType, ImageSet, Image } from '../store/image/types'
-
-const ENDPOINT = 'http://localhost:5001'
 
 const countImageSet = async (
     imageSet: ImageSet,
