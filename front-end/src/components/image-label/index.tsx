@@ -75,14 +75,14 @@ function ImageLabel() {
     return (
         <div className={styles.image}>
             {
-                image && project && image.blob &&
+                image && project &&
                 <>
                     <div className={styles.pageHeader}>
                         <div className={styles.headerText}>{project.name}</div>
                     </div>
                     <div className={styles.contentContainer}>
                         <div className={styles.imageWrapper}>
-                            <EncodedImage encodedString={image.blob}/>
+                            <EncodedImage encodedString={image.preview_image_blob}/>
                         </div>
                         <div className={styles.classContainer}>
                             <div className={styles.classHeader}>Label</div>

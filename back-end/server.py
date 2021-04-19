@@ -55,22 +55,6 @@ def move_folder(path, new_path):
     return True
 
 
-def fill_preview_image(project, mongo_images):
-    project_id = project['project_id']
-    for ic in project['image_classes']:
-        preview = mongo_images.read(
-            option={
-                'project_id': project_id,
-                'class_id': ic['class_id']
-            },
-            limit=4
-        )
-        preview = [p['preview_image_blob'] for p in preview]
-        ic['preview'] = preview
-
-    return project
-
-
 @app.route('/')
 @cross_origin()
 def base():
@@ -106,8 +90,6 @@ def get_project():
     mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
     if project_id == None:
         response = mongo_projects.read()
-        for project in response:
-            project = fill_preview_image(project, mongo_images)
         return Response(
             response=json.dumps(response),
             status=200,
@@ -115,12 +97,28 @@ def get_project():
         )
     else:
         response = mongo_projects.find_one({"project_id": project_id})
-        response = fill_preview_image(response, mongo_images)
         return Response(
             response=json.dumps(response),
             status=200,
             mimetype='application/json'
         )
+
+
+@app.route('/projects/support', methods=['GET'])
+@cross_origin()
+def get_support_set():
+    project_id = request.args.get('project_id')
+    mongo_obj = MongoAPI(generate_connection_config('images'), mongo_url)
+    response = mongo_obj.read(option={
+        "project_id": project_id,
+        "image_set": "SUPPORT"
+    })
+
+    return Response(
+        response=json.dumps(response),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 @app.route('/projects/query', methods=['GET'])
@@ -245,9 +243,6 @@ def get_image():
         )
     else:
         response = mongo_obj.find_one({"image_id": image_id})
-        with open(response['image_path'], "rb") as imageFile:
-            blob = base64.b64encode(imageFile.read())
-        response['blob'] = str(blob)[2:-1]
         return Response(
             response=json.dumps(response),
             status=200,

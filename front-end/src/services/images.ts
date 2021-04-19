@@ -28,6 +28,16 @@ const getQueryImage = async (
     return queryImages
 }
 
+
+const getSupportImage = async (
+    projectId: string
+) => {
+    const response = await axios.get(`${ENDPOINT}/projects/support?project_id=${projectId}`)
+    const supportImages: Image[] = response.data
+    return supportImages
+}
+
+
 const getImage = async (imageId: string) => {
     const response = await axios.get(`${ENDPOINT}/images?image_id=${imageId}`)
     const image: Image = response.data
@@ -61,5 +71,6 @@ export {
     getQueryImage,
     getImage,
     getLabeledImage,
-    manualLabel
+    manualLabel,
+    getSupportImage
 }
