@@ -1,8 +1,7 @@
 import axios from 'axios'
 
+import { ENDPOINT } from './index'
 import { LabelType, ImageSet, Image } from '../store/image/types'
-
-const ENDPOINT = 'http://localhost:5001'
 
 const countImageSet = async (
     imageSet: ImageSet,
@@ -27,6 +26,16 @@ const getQueryImage = async (
     const queryImages: Image[] = response.data
     return queryImages
 }
+
+
+const getSupportImage = async (
+    projectId: string
+) => {
+    const response = await axios.get(`${ENDPOINT}/projects/support?project_id=${projectId}`)
+    const supportImages: Image[] = response.data
+    return supportImages
+}
+
 
 const getImage = async (imageId: string) => {
     const response = await axios.get(`${ENDPOINT}/images?image_id=${imageId}`)
@@ -61,5 +70,6 @@ export {
     getQueryImage,
     getImage,
     getLabeledImage,
-    manualLabel
+    manualLabel,
+    getSupportImage
 }

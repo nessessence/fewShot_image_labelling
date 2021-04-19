@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const ENDPOINT = 'http://localhost:5001'
+import { ENDPOINT } from './index'
 
 const getDataroot = async () => {
     const response = await axios.get(`${ENDPOINT}/dataroot`)

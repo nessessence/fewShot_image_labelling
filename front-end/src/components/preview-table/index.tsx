@@ -1,14 +1,45 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+
 import { EncodedImage } from '../index'
 import { Project } from '../../store/project/types'
 import styles from './style.module.css'
+import { getSupportImage } from '../../services/images'
+import { Image } from '../../store/image/types'
 
 type PreviewTableProps = {
     project: Project
 }
 
+type ImageMap = {
+    [key: string]: Image[]
+}
+
 function PreviewTable ({ project }: PreviewTableProps) {
-    const { image_classes } = project
-    const filteredClasses = image_classes.filter(c => c.class_id !== '0')
+    const projectId = project.project_id
+    const imageClasses = project.image_classes
+    const filteredClasses = imageClasses.filter(c => c.class_id !== '0')
+
+    const [supportImages, setSupportImages] = useState<ImageMap>({})
+
+    const transformImage = (images: Image[]) => {
+        const transformedImages: ImageMap = {}
+        images.forEach(image => {
+            const classId = image.class_id
+            if (!transformedImages[classId]) {
+                transformedImages[classId] = []
+            }
+            transformedImages[classId].push(image)
+        })
+        return transformedImages
+    }
+    useEffect(() => {
+        (async () => {
+            const images = await getSupportImage(projectId)
+            const supportImages = transformImage(images)
+            setSupportImages(supportImages)
+        })()
+    }, [projectId])
 
     return (
         <div className={styles.detailContainer}>
@@ -24,10 +55,11 @@ function PreviewTable ({ project }: PreviewTableProps) {
                         <div className={styles.tableColumn2}><div className={styles.className}>{imageClass.class_name}</div></div>
                         <div className={styles.tableColumn3}>
                         {
-                            imageClass.preview && imageClass.preview.map(binary => (
-                                <div className={styles.imageContainer} key={binary}>
-                                    <EncodedImage encodedString={binary}/>
-                                </div>
+                            imageClass && supportImages[imageClass.class_id] &&
+                            supportImages[imageClass.class_id].map(image => (
+                                <Link className={styles.imageContainer} key={image.image_id} to={`/image/${image.image_id}?temporal=TRUE`}>
+                                    <EncodedImage encodedString={image.preview_image_blob}/>
+                                </Link>
                             ))
                         }
                         </div>

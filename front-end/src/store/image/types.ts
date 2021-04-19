@@ -7,7 +7,6 @@ export type Image = {
     image_set: ImageSet,
     type: LabelType | null,
     preview_image_blob: string,
-    blob?: string
 }
 
 export type ImageScore = {

@@ -1,8 +1,7 @@
 import axios from 'axios'
 
 import { LabelType } from '../store/image/types'
-
-const ENDPOINT = 'http://localhost:5001'
+import { ENDPOINT } from './index'
 
 const addToSupport = async (
     projectId: string,
