@@ -56,7 +56,7 @@ function ImageLabel() {
     const filteredScoredClass = filteredClass?.map(ic => (
         {
             ...ic,
-            score: classScore ? classScore.find(cs => cs.class_id === ic.class_id)?.class_score : 0
+            score: (classScore && classScore[ic.class_id]) ? classScore[ic.class_id] : 0
         }
     ))
     filteredScoredClass?.sort((_t, _o) => {

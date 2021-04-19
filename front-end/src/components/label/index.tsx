@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 
 import styles from './style.module.css'
 import { RootState } from '../../store/index'
-import { PreviewTable, QueryList, LabeledList } from '../index'
+import { PreviewTable, QueryList, LabeledList, Popup, RecomputeConfirm } from '../index'
 import { setCurrentProject } from '../../store/project/actions'
 import { LabelType } from '../../store/image/types'
 
@@ -28,12 +28,29 @@ function Label() {
     }, [dispatch, projectId])
 
     const [currentTab, setCurrentTab] = useState<TabItem>(TabItem.Support)
+    const [showPopup, setShowPopup] = useState<boolean>(false)
+    const closePopup = () => {
+        setShowPopup(false)
+    }
 
     return (
         <div className={styles.label}>
             {
                 project &&
                 <>
+                    {
+                        showPopup &&
+                        <Popup closePopupEvent={closePopup}>
+                            {
+                                currentTab === TabItem.Support &&
+                                <RecomputeConfirm closePopupEvent={closePopup} projectId={projectId}/>
+                            }
+                            {
+                                currentTab === TabItem.Query &&
+                                <div>auto label</div>
+                            }
+                        </Popup>
+                    }
                     <div className={styles.pageHeader}>
                         <div className={styles.headerText}>{project?.name}</div>
                     </div>
@@ -51,11 +68,21 @@ function Label() {
                         }
                         {
                             currentTab === TabItem.Support &&
-                            <button className={styles.button}>recompute score</button>
+                            <button 
+                                onClick={() => { setShowPopup(true) }}
+                                className={styles.button}
+                            >
+                                recompute score
+                            </button>
                         }
                         {
                             currentTab === TabItem.Query &&
-                            <button className={styles.button}>auto label</button>
+                            <button 
+                                onClick={() => { setShowPopup(true) }}
+                                className={styles.button}
+                            >
+                                auto label
+                            </button>
                         }
                     </div>
                     {

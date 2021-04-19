@@ -3,7 +3,7 @@ export type Image = {
     image_id: string,
     image_path: string,
     class_id: string,
-    class_score: ImageScore[] | null,
+    class_score: ImageScore | null,
     image_set: ImageSet,
     type: LabelType | null,
     preview_image_blob: string,
@@ -11,8 +11,7 @@ export type Image = {
 }
 
 export type ImageScore = {
-    class_id: string,
-    class_score: number
+    [key: string]: number,
 }
 
 export enum ImageSet {
