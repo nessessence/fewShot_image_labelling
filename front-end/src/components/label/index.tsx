@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 
 import styles from './style.module.css'
 import { RootState } from '../../store/index'
-import { PreviewTable, QueryList, LabeledList, Popup, RecomputeConfirm } from '../index'
+import { PreviewTable, QueryList, LabeledList, Popup, RecomputeConfirm, Autolabel } from '../index'
 import { setCurrentProject } from '../../store/project/actions'
 import { LabelType } from '../../store/image/types'
 
@@ -47,7 +47,7 @@ function Label() {
                             }
                             {
                                 currentTab === TabItem.Query &&
-                                <div>auto label</div>
+                                <Autolabel closePopupEvent={closePopup} projectId={projectId} pageSize={48}/>
                             }
                         </Popup>
                     }

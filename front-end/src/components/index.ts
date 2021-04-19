@@ -10,6 +10,7 @@ import QueryList from './query-list'
 import ImageLabel from './image-label'
 import LabeledList from './labeled-list'
 import RecomputeConfirm from './recompute-confirm'
+import Autolabel from './autolabel'
 
 export {
     Home,
@@ -23,5 +24,6 @@ export {
     QueryList,
     ImageLabel,
     LabeledList,
-    RecomputeConfirm
+    RecomputeConfirm,
+    Autolabel
 }

@@ -24,7 +24,19 @@ const recompute = async (
     return response.status
 }
 
+const autolabel = async(
+    projectId: string,
+    limit: number
+) => {
+    const response = await axios.post(`${ENDPOINT}/autolabel`, {
+        project_id: projectId,
+        limit: limit
+    })
+    return response.status
+}
+
 export {
     addToSupport,
-    recompute
+    recompute,
+    autolabel
 }
