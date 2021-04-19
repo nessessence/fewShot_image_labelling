@@ -380,14 +380,15 @@ def autolabel():
         option={'image_set': 'QUERY', 'project_id': project_id})
     classes_best_score = []
     for q in query:
-        idx = np.argmax(list(q['class_score'].values()))
-        best_score = list(q['class_score'].values())[idx]
-        if best_score*100 >= limit:
-            class_id = list(q['class_score'].keys())[idx]
-            classes_best_score.append({
-                'class_id': class_id,
-                'image_id': q['image_id']
-            })
+        if q['class_score']:
+            idx = np.argmax(list(q['class_score'].values()))
+            best_score = list(q['class_score'].values())[idx]
+            if best_score*100 >= limit:
+                class_id = list(q['class_score'].keys())[idx]
+                classes_best_score.append({
+                    'class_id': class_id,
+                    'image_id': q['image_id']
+                })
     for obj in classes_best_score:
         mongo_images.update(
             query={'image_id': obj['image_id'], 'project_id': project_id},
