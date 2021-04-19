@@ -90,6 +90,11 @@ def get_project():
     mongo_images = MongoAPI(generate_connection_config('images'), mongo_url)
     if project_id == None:
         response = mongo_projects.read()
+        for project in response:
+            project['unlabeled_image_count'] = len(mongo_images.read(option={
+                'project_id': project['project_id'],
+                'image_set': 'QUERY'
+            }))
         return Response(
             response=json.dumps(response),
             status=200,
@@ -97,6 +102,10 @@ def get_project():
         )
     else:
         response = mongo_projects.find_one({"project_id": project_id})
+        response['unlabeled_image_count'] = len(mongo_images.read(option={
+            'project_id': project_id,
+            'image_set': 'QUERY'
+        }))
         return Response(
             response=json.dumps(response),
             status=200,
@@ -180,12 +189,11 @@ def read_project_folder():
     project_id = str(uuid4())
     image_classes = {'query': '0'}
     images = []
-    unlabeled_image_count = None
     for subdir in glob(joined_path):
         dirname = os.path.split(subdir)[-1]
         subdir_file = glob(os.path.join(subdir, '*'), recursive=True)
         if dirname == 'query':
-            unlabeled_image_count = len(subdir_file)
+            continue
         else:
             image_classes[dirname] = str(uuid4())
 
@@ -215,7 +223,6 @@ def read_project_folder():
             "class_id": v
         } for (k, v) in image_classes.items()],
         "project_path": project_path,
-        "unlabeled_image_count": unlabeled_image_count,
     }
     mongo_projects = MongoAPI(
         generate_connection_config('projects'), mongo_url)
