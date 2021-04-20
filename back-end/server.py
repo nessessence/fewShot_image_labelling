@@ -19,6 +19,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 mongo_url = "mongodb://db:27017/"
 database_name = 'NoMoreLabel'
 collection_name = ['images', 'projects']
+allowed_file_extension = ['.jpg', '.JPG', '.png', '.gif']
 
 
 def init_database(mongo_url, database_name, collection_name):
@@ -201,6 +202,9 @@ def read_project_folder():
         dirname = os.path.split(subdir)[-1]
         subdir_file = glob(os.path.join(subdir, '*'), recursive=True)
         for file in subdir_file:
+            _, file_ext = os.path.splitext(file)
+            if file_ext not in allowed_file_extension:
+                continue
             image_path = os.path.join(subdir, file)
             preview_image_blob = get_preview_image_blob(image_path)
             class_id = image_classes[dirname]
