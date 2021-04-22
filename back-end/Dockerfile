@@ -12,8 +12,8 @@ WORKDIR /back-end
 RUN git clone https://github.com/nessessence/SSL-FEW-SHOT.git
 RUN mv SSL-FEW-SHOT ssl_fewshot
 
-RUN mkdir ssl_fewshot/logs
-RUN mkdir ssl_fewshot/pretrained && wget https://www.dropbox.com/s/801o9e3ocqcq841/imagenet1K_ndf192_rkhs_1536_rd8_ssl_cpt.pth -P ssl_fewshot/pretrained/ -nv
+RUN mkdir ssl_fewshot/logs && mkdir ssl_fewshot/pretrained
+RUN mv ./modelEncoder_Ness_MINI_ProtoNet_MINI_5shot_10way_max_acc.pth ./ssl_fewshot/pretrained/
 
 
 EXPOSE 5001
