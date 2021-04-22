@@ -6,7 +6,7 @@ RUN apt-get -y install git wget
 COPY requirements.txt /back-end/requirements.txt
 RUN pip3 install --upgrade pip && pip3 install -r /back-end/requirements.txt
 
-COPY * /back-end/
+COPY . /back-end/
 WORKDIR /back-end
 
 RUN git clone https://github.com/nessessence/SSL-FEW-SHOT.git
