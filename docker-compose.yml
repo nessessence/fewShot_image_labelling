@@ -3,7 +3,7 @@ services:
     db:
         image: mongo
         restart: always
-        container_name: fewshow-labelling-db
+        container_name: fewshot-labelling-db
         volumes:
             - ./mongodb:/data/db
     backend:
