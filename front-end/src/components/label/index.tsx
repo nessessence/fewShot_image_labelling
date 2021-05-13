@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation, Link } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
 import styles from './style.module.css'
@@ -18,8 +18,9 @@ export enum TabItem {
     Labeled = 'Labeled'
 }
 
-function Label() {
+const Label = () => {
     const dispatch = useDispatch()
+    const location = useLocation()
     const { projectId } = useParams<ParamType>()
     const project = useSelector((state: RootState) => state.project.currentProject)
 
@@ -27,7 +28,8 @@ function Label() {
         dispatch(setCurrentProject(projectId))
     }, [dispatch, projectId])
 
-    const [currentTab, setCurrentTab] = useState<TabItem>(TabItem.Support)
+    const query = new URLSearchParams(location.search);
+    const currentTab = query.get('tab') || TabItem.Support
     const [showPopup, setShowPopup] = useState<boolean>(false)
     const closePopup = () => {
         setShowPopup(false)
@@ -57,13 +59,13 @@ function Label() {
                     <div className={styles.tabContainer}>
                         {
                             Object.values(TabItem).map(tab => (
-                                <div
+                                <Link
                                     className={currentTab === tab ? styles.tabCurrent : styles.tab}
                                     key={tab}
-                                    onClick={() => { setCurrentTab(tab) }}
+                                    to={`${location.pathname}?tab=${tab}`}
                                 >
                                     {tab}
-                                </div>
+                                </Link>
                             ))
                         }
                         {
@@ -87,17 +89,17 @@ function Label() {
                     </div>
                     {
                         currentTab === TabItem.Support &&
-                        <PreviewTable project={project}/>
+                        <PreviewTable project={project} tab={currentTab}/>
                     }
                     {
                         currentTab === TabItem.Query &&
-                        <QueryList project={project} pageSize={48}/>
+                        <QueryList project={project} pageSize={48} tab={currentTab}/>
                     }
                     {
                         currentTab === TabItem.Labeled &&
                         <>
-                            <LabeledList project={project} pageSize={24} labelType={LabelType.AUTO}/>
-                            <LabeledList project={project} pageSize={24} labelType={LabelType.MANUAL}/>
+                            <LabeledList project={project} pageSize={24} tab={currentTab} labelType={LabelType.AUTO}/>
+                            <LabeledList project={project} pageSize={24} tab={currentTab} labelType={LabelType.MANUAL}/>
                         </>
                     }
                 </>

@@ -10,13 +10,15 @@ import { countImageSet } from '../../services/images'
 import { Image, ImageSet } from '../../store/image/types'
 import { EncodedImage } from '../index'
 import { RootState } from '../../store/index'
+import { TabItem } from '../label'
 
 type QueryListProps = {
     project: Project
     pageSize: number
+    tab: TabItem
 }
 
-function QueryList({ project, pageSize }: QueryListProps) {
+function QueryList({ project, pageSize, tab }: QueryListProps) {
     const dispatch = useDispatch()
 
     const projectId = project.project_id
@@ -48,7 +50,7 @@ function QueryList({ project, pageSize }: QueryListProps) {
             <div className={styles.imagesDisplay}>
                 {
                     queryImages.map((image: Image) => (
-                        <Link className={styles.imageContainer} to={`/image/${image.image_id}`} key={image.image_id}>
+                        <Link className={styles.imageContainer} to={`/image/${image.image_id}?returnLocation=${tab}`} key={image.image_id}>
                             <EncodedImage encodedString={image.preview_image_blob}/>
                         </Link>
                     ))

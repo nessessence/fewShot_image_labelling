@@ -6,16 +6,18 @@ import { Project } from '../../store/project/types'
 import styles from './style.module.css'
 import { getSupportImage } from '../../services/images'
 import { Image } from '../../store/image/types'
+import { TabItem } from '../label'
 
 type PreviewTableProps = {
-    project: Project
+    project: Project,
+    tab: TabItem
 }
 
 type ImageMap = {
-    [key: string]: Image[]
+    [key: string]: Image[],
 }
 
-function PreviewTable ({ project }: PreviewTableProps) {
+function PreviewTable ({ project, tab }: PreviewTableProps) {
     const projectId = project.project_id
     const imageClasses = project.image_classes
     const filteredClasses = imageClasses.filter(c => c.class_id !== '0')
@@ -57,7 +59,7 @@ function PreviewTable ({ project }: PreviewTableProps) {
                         {
                             imageClass && supportImages[imageClass.class_id] &&
                             supportImages[imageClass.class_id].map(image => (
-                                <Link className={styles.imageContainer} key={image.image_id} to={`/image/${image.image_id}?temporal=TRUE`}>
+                                <Link className={styles.imageContainer} key={image.image_id} to={`/image/${image.image_id}?temporal=TRUE&returnLocation=${tab}`}>
                                     <EncodedImage encodedString={image.preview_image_blob}/>
                                 </Link>
                             ))

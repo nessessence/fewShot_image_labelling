@@ -8,14 +8,16 @@ import { Image, ImageSet, LabelType } from '../../store/image/types'
 import { countImageSet, getLabeledImage } from '../../services/images'
 import { addToSupport } from '../../services/transitions'
 import { EncodedImage } from '../index'
+import { TabItem } from '../label'
 
 type LabeledListProps = {
     project: Project,
     pageSize: number,
-    labelType: LabelType
+    labelType: LabelType,
+    tab: TabItem
 }
 
-function LabeledList({ project, pageSize, labelType }: LabeledListProps) {
+function LabeledList({ project, pageSize, labelType, tab }: LabeledListProps) {
     const projectId = project.project_id
     const [pageCount, setPageCount] = useState<number>(0)
     const [page, setPage] = useState<number>(1)
@@ -75,7 +77,7 @@ function LabeledList({ project, pageSize, labelType }: LabeledListProps) {
             <div className={styles.imagesDisplay}>
                 {
                     labeledImages.map((image: Image) => (
-                        <Link className={styles.imageContainer} to={`/image/${image.image_id}?temporal=TRUE`} key={image.image_id}>
+                        <Link className={styles.imageContainer} to={`/image/${image.image_id}?temporal=TRUE&returnLocation=${tab}`} key={image.image_id}>
                             <EncodedImage encodedString={image.preview_image_blob}/>
                         </Link>
                     ))

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useHistory, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
+import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 
 import styles from './style.module.css'
 import { Image } from '../../store/image/types'
@@ -23,6 +24,7 @@ function ImageLabel() {
     const project = useSelector((state: RootState) => state.project.currentProject)
     const queryImages = useSelector((state: RootState) => state.image.queryImages)
     const isTemporal = query.get('temporal')
+    const returnLocation = query.get('returnLocation')
     
     const iterateItem = (queryImages: Image[], imageId: string) => {
         const index = queryImages.findIndex(image => image.image_id === imageId)
@@ -53,8 +55,13 @@ function ImageLabel() {
             history.push(`/label/${project?.project_id}`)
         }
         else {
-            history.push(`/image/${nextImage.image_id}`)
+            const propagatedQuery = returnLocation ? `?returnLocation=${returnLocation}` : '';
+            history.push(`/image/${nextImage.image_id}${propagatedQuery}`)
         }
+    }
+
+    const goBack = () => {
+       history.push(`/label/${project?.project_id}?tab=${returnLocation}`) 
     }
 
     const classScore = image?.class_score
@@ -83,6 +90,12 @@ function ImageLabel() {
             {
                 image && project &&
                 <>
+                    {
+                        returnLocation &&
+                        <button className={styles.backButton} onClick={goBack}>
+                            <ArrowBackIcon/> go back
+                        </button>
+                    }
                     <div className={styles.pageHeader}>
                         <div className={styles.headerText}>{project.name}</div>
                     </div>
@@ -95,7 +108,7 @@ function ImageLabel() {
                             <div className={styles.classBox}>
                                 {
                                     filteredScoredClass?.map(ic => (
-                                        <div className={styles.classItem} key={ic.class_id} onClick={() => { handleLabel(ic.class_id) }}>
+                                        <div className={ic.class_id === image.class_id ? styles.classItemCurrent : styles.classItem} key={ic.class_id} onClick={() => { handleLabel(ic.class_id) }}>
                                             <div className={styles.classItemName}>{ic.class_name}</div>
                                             <div className={styles.classItemScore}>score : {ic.score}</div>
                                         </div>
