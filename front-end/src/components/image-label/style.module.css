@@ -65,25 +65,22 @@
   justify-content: center;
   cursor: pointer;
   transition: 0.1s;
-  background: #edfcfc;
 }
 .classItem:hover {
-  background: #d4fcff;
+  background: #f1f6f8;
 }
 .classItemCurrent {
   width: 100%;
   height: 75px;
-  border: 5px solid #817f7f;
+  border-bottom: 1px solid #817f7f;
+  border-right: 1px solid #817f7f;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: 0.1s;
-  background: #edfcfc;
-}
-.classItemCurrent:hover {
-  background: #d4fcff;
+  background: #d3f2ff;
 }
 
 .classItemName {

@@ -93,7 +93,7 @@ function ImageLabel() {
                     {
                         returnLocation &&
                         <button className={styles.backButton} onClick={goBack}>
-                            <ArrowBackIcon/> go back
+                            <ArrowBackIcon/> back to preview
                         </button>
                     }
                     <div className={styles.pageHeader}>
