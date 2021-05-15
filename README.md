@@ -108,4 +108,4 @@ Install docker-compose from this [documentation](https://docs.docker.com/compose
 
 ## License
 
-(....)
+[MIT](LICENSE)
