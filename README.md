@@ -1,6 +1,10 @@
 # fewShot_image_labelling
 
-(..intro about the project..) image_labelling platform using few-shot learning approach
+We are making our own labelling platform based on few shot learning. We aim to help everyone speed up their labelling process for image classification task.
+
+With few shot learning, we can use small batch of labelled images (support set) to compute the classes probability of your unlabelled images (query set).
+
+Take a look at our preview here to see if this platform can fill your need. We hope this can help!.
 
 ## Contents
 1. [Features](#features)
