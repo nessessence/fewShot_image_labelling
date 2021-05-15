@@ -11,7 +11,7 @@
 
 ## Model
 
-(..the model..)
+visit this [repository](https://github.com/nessessence/SSL-FEW-SHOT) to see code and model details
 
 ## Features
 
