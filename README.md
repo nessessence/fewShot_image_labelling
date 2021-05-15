@@ -11,6 +11,8 @@
 
 ## Model
 
+(..brief information about the model..)
+
 visit this [repository](https://github.com/nessessence/SSL-FEW-SHOT) to see code and model details
 
 ## Features
@@ -35,7 +37,12 @@ visit this [repository](https://github.com/nessessence/SSL-FEW-SHOT) to see code
 
 ## Citation
 
-(....)
+    @article{chen2019selfsupervised,
+      title={Self-Supervised Learning For Few-Shot Image Classification},
+      author={Da Chen and Yuefeng Chen and Yuhong Li and Feng Mao and Yuan He and Hui Xue}
+      Journal={arXiv preprint arXiv:1911.06045},
+      year={2019}
+    }
 
 ## License
 
