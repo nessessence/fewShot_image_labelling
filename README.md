@@ -60,8 +60,6 @@ We provided both pre-trained model and platform to help you speed up the image l
 
 ## Model
 
-(..brief information about the model..)
-
 visit this [repository](https://github.com/nessessence/SSL-FEW-SHOT) to see code and model details
 
 ## Installation
